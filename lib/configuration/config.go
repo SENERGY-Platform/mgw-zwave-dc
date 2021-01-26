@@ -32,9 +32,11 @@ type Config struct {
 	ZwaveMqttBroker         string            `json:"zwave_mqtt_broker"`
 	ZwaveMqttUser           string            `json:"zwave_mqtt_user"`
 	ZwaveMqttPw             string            `json:"zwave_mqtt_pw"`
+	ZwaveMqttClientId       string            `json:"zwave_mqtt_client_id"`
 	MgwMqttBroker           string            `json:"mgw_mqtt_broker"`
 	MgwMqttUser             string            `json:"mgw_mqtt_user"`
 	MgwMqttPw               string            `json:"mgw_mqtt_pw"`
+	MgwMqttClientId         string            `json:"mgw_mqtt_client_id"`
 	ZvaveValueEventTopic    string            `json:"zvave_value_event_topic"`
 	ZwaveMqttApiTopic       string            `json:"zwave_mqtt_api_topic"`
 	ZwaveNetworkEventsTopic string            `json:"zwave_network_events_topic"`

@@ -18,36 +18,42 @@ const NodeAvailableTopic = "/node_available"
 
 type Client struct {
 	mqtt               paho.Client
+	debug              bool
 	valueEventTopic    string
 	apiTopic           string
 	networkEventsTopic string
-	debug              bool
 	deviceInfoListener DeviceInfoListener
 	valueEventListener ValueEventListener
 }
 
 func New(config configuration.Config) (*Client, error) {
-	options := paho.NewClientOptions().
-		SetPassword(config.ZwaveMqttPw).
-		SetUsername(config.ZwaveMqttUser).
-		SetAutoReconnect(true).
-		SetCleanSession(false).
-		SetClientID(config.ConnectorId).
-		AddBroker(config.ZwaveMqttBroker)
-
-	mqtt := paho.NewClient(options)
-	if token := mqtt.Connect(); token.Wait() && token.Error() != nil {
-		log.Println("Error on MqttStart.Connect(): ", token.Error())
-		return nil, token.Error()
-	}
 	client := &Client{
-		mqtt:               mqtt,
 		valueEventTopic:    config.ZvaveValueEventTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
 		networkEventsTopic: config.ZwaveNetworkEventsTopic,
 		debug:              config.Debug,
 	}
-	return client, client.startDefaultListener()
+	options := paho.NewClientOptions().
+		SetPassword(config.ZwaveMqttPw).
+		SetUsername(config.ZwaveMqttUser).
+		SetAutoReconnect(true).
+		SetCleanSession(true).
+		SetClientID(config.ZwaveMqttClientId).
+		AddBroker(config.ZwaveMqttBroker).
+		SetOnConnectHandler(func(_ paho.Client) {
+			err := client.startDefaultListener()
+			if err != nil {
+				log.Fatal("FATAL: ", err)
+			}
+		})
+
+	client.mqtt = paho.NewClient(options)
+	if token := client.mqtt.Connect(); token.Wait() && token.Error() != nil {
+		log.Println("Error on MqttStart.Connect(): ", token.Error())
+		return nil, token.Error()
+	}
+
+	return client, nil
 }
 
 func (this *Client) SetGetDeviceInfoListener(listener DeviceInfoListener) {

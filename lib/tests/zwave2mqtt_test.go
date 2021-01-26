@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 	"zwave2mqtt-connector/lib/configuration"
@@ -16,6 +18,7 @@ func TestGetNodes(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
 	client, err := zwave2mqtt.New(config)
 	if err != nil {
 		t.Error(err)
@@ -45,6 +48,7 @@ func TestNodesAvailableEvent(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
 	client, err := zwave2mqtt.New(config)
 	if err != nil {
 		t.Error(err)
@@ -61,12 +65,13 @@ func TestNodesAvailableEvent(t *testing.T) {
 }
 
 func TestValueEvents(t *testing.T) {
-	//t.Skip("expects manually thrown available events and manual test stop")
+	t.Skip("expects manually thrown available events and manual test stop")
 	config, err := configuration.Load("./resources/config.json")
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
 	client, err := zwave2mqtt.New(config)
 	if err != nil {
 		t.Error(err)
@@ -86,6 +91,7 @@ func TestSetValue(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
 	client, err := zwave2mqtt.New(config)
 	if err != nil {
 		t.Error(err)
