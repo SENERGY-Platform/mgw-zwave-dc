@@ -58,19 +58,19 @@ type NodeAvailableInfo struct {
 }
 */
 type NodeInfo struct {
-	NodeId         int64                 `json:"node_id"`
-	DeviceId       string                `json:"device_id"`
-	Manufacturer   string                `json:"manufacturer"`
-	ManufacturerId string                `json:"manufacturerid"`
-	Product        string                `json:"product"`
-	ProductType    string                `json:"producttype"`
-	ProductId      string                `json:"productid"`
-	Type           string                `json:"type"`
-	Name           string                `json:"name"`
-	Values         map[string]NodeValues `json:"values"`
+	NodeId         int64                `json:"node_id"`
+	DeviceId       string               `json:"device_id"`
+	Manufacturer   string               `json:"manufacturer"`
+	ManufacturerId string               `json:"manufacturerid"`
+	Product        string               `json:"product"`
+	ProductType    string               `json:"producttype"`
+	ProductId      string               `json:"productid"`
+	Type           string               `json:"type"`
+	Name           string               `json:"name"`
+	Values         map[string]NodeValue `json:"values"`
 }
 
-type NodeValues struct {
+type NodeValue struct {
 	ValueId    string      `json:"value_id"`
 	NodeId     int64       `json:"node_id"`
 	ClassId    int64       `json:"class_id"`

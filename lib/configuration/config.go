@@ -35,6 +35,7 @@ type Config struct {
 	MgwMqttBroker           string            `json:"mgw_mqtt_broker"`
 	MgwMqttUser             string            `json:"mgw_mqtt_user"`
 	MgwMqttPw               string            `json:"mgw_mqtt_pw"`
+	ZvaveValueEventTopic    string            `json:"zvave_value_event_topic"`
 	ZwaveMqttApiTopic       string            `json:"zwave_mqtt_api_topic"`
 	ZwaveNetworkEventsTopic string            `json:"zwave_network_events_topic"`
 	TypeMapping             map[string]string `json:"type_mapping"`

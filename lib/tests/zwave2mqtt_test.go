@@ -60,6 +60,26 @@ func TestNodesAvailableEvent(t *testing.T) {
 	time.Sleep(1 * time.Second)
 }
 
+func TestValueEvents(t *testing.T) {
+	//t.Skip("expects manually thrown available events and manual test stop")
+	config, err := configuration.Load("./resources/config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	client, err := zwave2mqtt.New(config)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	ctx := context.Background()
+	client.SetValueEventListener(func(value zwave2mqtt.NodeValue) {
+		temp, err := json.Marshal(value)
+		log.Println(err, string(temp))
+	})
+	<-ctx.Done()
+}
+
 func TestSetValue(t *testing.T) {
 	config, err := configuration.Load("./resources/config.json")
 	if err != nil {

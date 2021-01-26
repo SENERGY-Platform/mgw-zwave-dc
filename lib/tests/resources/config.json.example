@@ -1,5 +1,6 @@
 {
     "connector_id": "mgw-zwave-dc",
+    "zvave_value_event_topic": "zwave2mqtt/#",
     "zwave_mqtt_api_topic": "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api",
     "zwave_network_events_topic": "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY",
     "zwave_mqtt_broker": "tcp://localhost:1883",
