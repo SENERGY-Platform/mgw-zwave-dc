@@ -33,7 +33,12 @@ func New(config configuration.Config, ctx context.Context, refreshNotifier func(
 		SetCleanSession(true).
 		SetClientID(config.MgwMqttClientId).
 		AddBroker(config.MgwMqttBroker).
+		SetResumeSubs(true).
+		SetConnectionLostHandler(func(_ paho.Client, err error) {
+			log.Println("connection to mgw broker lost")
+		}).
 		SetOnConnectHandler(func(_ paho.Client) {
+			log.Println("connected to mgw broker")
 			err := client.initSubscriptions()
 			if err != nil {
 				log.Fatal("FATAL: ", err)

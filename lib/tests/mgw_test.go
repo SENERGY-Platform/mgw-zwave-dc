@@ -225,3 +225,64 @@ func TestMgwCommand(t *testing.T) {
 		return
 	}
 }
+
+func TestMgwReconnect(t *testing.T) {
+	t.Skip("helper for manual reconnect test")
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	config, err := configuration.Load("./resources/config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, mqttIp, err := docker.Mqtt(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	config.MgwMqttBroker = "tcp://" + mqttIp + ":1883"
+	config.MgwMqttUser = ""
+	config.MgwMqttPw = ""
+	config.MgwMqttClientId = "test-mgw-connector-" + strconv.Itoa(rand.Int())
+
+	client, err := mgw.New(config, ctx, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	//paho.DEBUG = log.New(os.Stdout, "MQTT-DEBUG", log.LstdFlags)
+	err = client.ListenToDeviceCommands("test-device-id", func(deviceId string, serviceId string, command mgw.Command) {
+		log.Println("RECEIVE", deviceId, serviceId, command)
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	mqttclient := paho.NewClient(paho.NewClientOptions().
+		SetAutoReconnect(true).
+		SetCleanSession(true).
+		SetClientID("test-connection-" + strconv.Itoa(rand.Int())).
+		AddBroker(config.MgwMqttBroker))
+	if token := mqttclient.Connect(); token.Wait() && token.Error() != nil {
+		log.Println("Error on Mqtt.Connect(): ", token.Error())
+		t.Error(err)
+		return
+	}
+	defer mqttclient.Disconnect(0)
+
+	ticker := time.NewTicker(2 * time.Second)
+	for _ = range ticker.C {
+		token := mqttclient.Publish("command/test-device-id/test-service-id", 2, false, `{"command_id": "command-id", "data": "{\"power\": false}"}`)
+		if token.Wait() && token.Error() != nil {
+			log.Println("unable to send command", token.Error())
+		} else {
+			log.Println("SEND")
+		}
+	}
+}

@@ -49,7 +49,7 @@ func (this *Client) ListenToDeviceCommands(deviceId string, commandHandler Devic
 		commandHandler(deviceId, serviceId, command)
 	}
 
-	this.registerSubscription(deviceId, handler)
+	this.registerSubscription(topic, handler)
 
 	token := this.mqtt.Subscribe(topic, 2, handler)
 	if token.Wait() && token.Error() != nil {

@@ -33,8 +33,8 @@ func (this *Client) getSubscriptions() []Subscription {
 	return this.subscriptions
 }
 
-func (this *Client) initSubscriptions() error {
-	err := this.loadOldSubscriptions()
+func (this *Client) initSubscriptions() (err error) {
+	err = this.loadOldSubscriptions()
 	if err != nil {
 		return err
 	}
@@ -49,6 +49,7 @@ func (this *Client) loadOldSubscriptions() error {
 	}
 	subs := this.getSubscriptions()
 	for _, sub := range subs {
+		log.Println("resubscribe to", sub.Topic)
 		token := this.mqtt.Subscribe(sub.Topic, 2, sub.Handler)
 		if token.Wait() && token.Error() != nil {
 			log.Println("Error on Subscribe: ", sub.Topic, token.Error())
