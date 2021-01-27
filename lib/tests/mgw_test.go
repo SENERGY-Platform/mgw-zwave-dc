@@ -121,3 +121,107 @@ func TestMgwDeviceManagement(t *testing.T) {
 		return
 	}
 }
+
+func TestMgwCommand(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	config, err := configuration.Load("./resources/config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	mqttPort, _, err := docker.Mqtt(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	config.MgwMqttBroker = "tcp://localhost:" + mqttPort
+	config.MgwMqttUser = ""
+	config.MgwMqttPw = ""
+	config.MgwMqttClientId = "test-mgw-connector-" + strconv.Itoa(rand.Int())
+
+	mqttclient := paho.NewClient(paho.NewClientOptions().
+		SetAutoReconnect(true).
+		SetCleanSession(false).
+		SetClientID("test-connection-" + strconv.Itoa(rand.Int())).
+		AddBroker(config.MgwMqttBroker))
+	if token := mqttclient.Connect(); token.Wait() && token.Error() != nil {
+		log.Println("Error on Mqtt.Connect(): ", token.Error())
+		t.Error(err)
+		return
+	}
+	defer mqttclient.Disconnect(0)
+
+	client, err := mgw.New(config, ctx, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	commandCount := 0
+	err = client.ListenToDeviceCommands("test-device-id", func(deviceId string, serviceId string, command mgw.Command) {
+		commandCount = commandCount + 1
+		if deviceId != "test-device-id" {
+			t.Error(deviceId)
+			return
+		}
+		if serviceId != "test-service-id" {
+			t.Error(serviceId)
+			return
+		}
+		if command.CommandId != "command-id" {
+			t.Error(command.CommandId)
+			return
+		}
+		if command.Data != "{\"power\": false}" {
+			t.Error(command.Data)
+			return
+		}
+		command.Data = "{\"power\": true}"
+		err := client.Respond(deviceId, serviceId, command)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	responseCount := 0
+	token := mqttclient.Subscribe("response/test-device-id/test-service-id", 2, func(_ paho.Client, message paho.Message) {
+		responseCount = responseCount + 1
+		expectedMessage := `{"command_id":"command-id","data":"{\"power\": true}"}`
+		if string(message.Payload()) != expectedMessage {
+			t.Error(string(message.Payload()))
+			return
+		}
+	})
+	if token.Wait() && token.Error() != nil {
+		log.Println("ERROR: device management subscription: ", token.Error())
+		t.Error(err)
+		return
+	}
+
+	token = mqttclient.Publish("command/test-device-id/test-service-id", 2, false, `{"command_id": "command-id", "data": "{\"power\": false}"}`)
+	if token.Wait() && token.Error() != nil {
+		log.Println("ERROR: device management refresh: ", token.Error())
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	if commandCount != 1 {
+		t.Error(commandCount)
+		return
+	}
+
+	if responseCount != 1 {
+		t.Error(responseCount)
+		return
+	}
+}
