@@ -1,13 +1,14 @@
 package mgw
 
 import (
+	"context"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"sync"
 	"zwave2mqtt-connector/lib/configuration"
 )
 
-const DeviceManagerTopic = "device-manager/device/"
+const DeviceManagerTopic = "device-manager/device"
 
 type Client struct {
 	mqtt                         paho.Client
@@ -18,7 +19,7 @@ type Client struct {
 	deviceManagerRefreshNotifier func()
 }
 
-func New(config configuration.Config, refreshNotifier func()) (*Client, error) {
+func New(config configuration.Config, ctx context.Context, refreshNotifier func()) (*Client, error) {
 	client := &Client{
 		connectorId:                  config.ConnectorId,
 		debug:                        config.Debug,
@@ -47,6 +48,11 @@ func New(config configuration.Config, refreshNotifier func()) (*Client, error) {
 		log.Println("Error on MqttStart.Connect(): ", token.Error())
 		return nil, token.Error()
 	}
+
+	go func() {
+		<-ctx.Done()
+		client.mqtt.Disconnect(0)
+	}()
 
 	return client, nil
 }

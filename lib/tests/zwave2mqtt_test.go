@@ -19,7 +19,7 @@ func TestGetNodes(t *testing.T) {
 		return
 	}
 	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
-	client, err := zwave2mqtt.New(config)
+	client, err := zwave2mqtt.New(config, context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -49,7 +49,7 @@ func TestNodesAvailableEvent(t *testing.T) {
 		return
 	}
 	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
-	client, err := zwave2mqtt.New(config)
+	client, err := zwave2mqtt.New(config, context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -72,7 +72,7 @@ func TestValueEvents(t *testing.T) {
 		return
 	}
 	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
-	client, err := zwave2mqtt.New(config)
+	client, err := zwave2mqtt.New(config, context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -92,7 +92,7 @@ func TestSetValue(t *testing.T) {
 		return
 	}
 	config.ZwaveMqttClientId = config.ZwaveMqttClientId + strconv.Itoa(rand.Int())
-	client, err := zwave2mqtt.New(config)
+	client, err := zwave2mqtt.New(config, context.Background())
 	if err != nil {
 		t.Error(err)
 		return

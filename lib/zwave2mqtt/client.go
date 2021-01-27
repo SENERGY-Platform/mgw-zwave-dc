@@ -1,6 +1,7 @@
 package zwave2mqtt
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -26,7 +27,7 @@ type Client struct {
 	valueEventListener ValueEventListener
 }
 
-func New(config configuration.Config) (*Client, error) {
+func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	client := &Client{
 		valueEventTopic:    config.ZvaveValueEventTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
@@ -52,6 +53,11 @@ func New(config configuration.Config) (*Client, error) {
 		log.Println("Error on MqttStart.Connect(): ", token.Error())
 		return nil, token.Error()
 	}
+
+	go func() {
+		<-ctx.Done()
+		client.mqtt.Disconnect(0)
+	}()
 
 	return client, nil
 }
