@@ -226,6 +226,73 @@ func TestMgwCommand(t *testing.T) {
 	}
 }
 
+func TestMgwEvent(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	config, err := configuration.Load("./resources/config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	mqttPort, _, err := docker.Mqtt(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	config.MgwMqttBroker = "tcp://localhost:" + mqttPort
+	config.MgwMqttUser = ""
+	config.MgwMqttPw = ""
+	config.MgwMqttClientId = "test-mgw-connector-" + strconv.Itoa(rand.Int())
+
+	mqttclient := paho.NewClient(paho.NewClientOptions().
+		SetAutoReconnect(true).
+		SetCleanSession(false).
+		SetClientID("test-connection-" + strconv.Itoa(rand.Int())).
+		AddBroker(config.MgwMqttBroker))
+	if token := mqttclient.Connect(); token.Wait() && token.Error() != nil {
+		log.Println("Error on Mqtt.Connect(): ", token.Error())
+		t.Error(err)
+		return
+	}
+	defer mqttclient.Disconnect(0)
+
+	client, err := mgw.New(config, ctx, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	eventCount := 0
+	token := mqttclient.Subscribe("event/test-device-id/test-service-id", 2, func(_ paho.Client, message paho.Message) {
+		eventCount = eventCount + 1
+		expectedMessage := `{"power":true}`
+		if string(message.Payload()) != expectedMessage {
+			t.Error("\n", string(message.Payload()), "\n", expectedMessage)
+			return
+		}
+	})
+	if token.Wait() && token.Error() != nil {
+		log.Println("ERROR: device management subscription: ", token.Error())
+		t.Error(err)
+		return
+	}
+
+	err = client.SendEvent("test-device-id", "test-service-id", map[string]bool{"power": true})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	if eventCount != 1 {
+		t.Error(eventCount)
+		return
+	}
+}
+
 func TestMgwReconnect(t *testing.T) {
 	t.Skip("helper for manual reconnect test")
 	wg := &sync.WaitGroup{}

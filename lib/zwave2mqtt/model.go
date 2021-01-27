@@ -98,6 +98,7 @@ type DeviceInfo struct {
 	ProductType    string
 	ProductId      string
 	Type           string
+	Values         map[string]NodeValue
 }
 
 func (this DeviceInfo) IsValid() bool {

@@ -8,24 +8,6 @@ import (
 	"strings"
 )
 
-func (this *Client) Respond(deviceId string, serviceId string, response Command) error {
-	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
-		return errors.New("mqtt client not connected")
-	}
-	topic := "response/" + deviceId + "/" + serviceId
-	msg, err := json.Marshal(response)
-	if this.debug {
-		log.Println("DEBUG: publish ", topic, string(msg))
-	}
-	token := this.mqtt.Publish(topic, 2, false, string(msg))
-	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Client.Publish(): ", token.Error())
-		return token.Error()
-	}
-	return err
-}
-
 func (this *Client) ListenToDeviceCommands(deviceId string, commandHandler DeviceCommandHandler) error {
 	if !this.mqtt.IsConnected() {
 		log.Println("WARNING: mqtt client not connected")
@@ -49,13 +31,13 @@ func (this *Client) ListenToDeviceCommands(deviceId string, commandHandler Devic
 		commandHandler(deviceId, serviceId, command)
 	}
 
-	this.registerSubscription(topic, handler)
-
 	token := this.mqtt.Subscribe(topic, 2, handler)
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Subscribe: ", topic, token.Error())
 		return token.Error()
 	}
+
+	this.registerSubscription(topic, handler)
 	return nil
 }
 
@@ -65,11 +47,11 @@ func (this *Client) StopListenToDeviceCommands(deviceId string) error {
 		return errors.New("mqtt client not connected")
 	}
 	topic := "command/" + deviceId + "/+"
-	this.unregisterSubscriptions(topic)
 	token := this.mqtt.Unsubscribe(topic)
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Unsubscribe: ", topic, token.Error())
 		return token.Error()
 	}
+	this.unregisterSubscriptions(topic)
 	return nil
 }

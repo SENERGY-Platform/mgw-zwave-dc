@@ -35,6 +35,7 @@ func (this *Client) startNodeCommandListener() error {
 					ProductType:    node.ProductType,
 					ProductId:      node.DeviceId,
 					Type:           node.Type,
+					Values:         node.Values,
 				}
 				if deviceInfo.IsValid() {
 					deviceInfos = append(deviceInfos, deviceInfo)
@@ -42,7 +43,7 @@ func (this *Client) startNodeCommandListener() error {
 					log.Println("IGNORE:", deviceInfo)
 				}
 			}
-			this.deviceInfoListener(deviceInfos)
+			this.deviceInfoListener(deviceInfos, true, true)
 		}
 	})
 	if token.Wait() && token.Error() != nil {
@@ -102,7 +103,7 @@ func (this *Client) startNodeEventListener() error {
 				Type:           info.Type,
 			}
 			if deviceInfo.IsValid() {
-				this.deviceInfoListener([]DeviceInfo{deviceInfo})
+				this.deviceInfoListener([]DeviceInfo{deviceInfo}, false, false)
 			} else if this.debug {
 				log.Println("IGNORE:", deviceInfo)
 			}

@@ -25,12 +25,12 @@ func TestGetNodes(t *testing.T) {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	client.SetGetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo) {
+	client.SetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo, _ bool, _ bool) {
 		temp, err := json.Marshal(nodes)
 		log.Println(err, string(temp))
 		cancel()
 	})
-	err = client.LoadNodes()
+	err = client.RequestDeviceInfoUpdate()
 	if err != nil {
 		t.Error(err)
 		return
@@ -55,7 +55,7 @@ func TestNodesAvailableEvent(t *testing.T) {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	client.SetGetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo) {
+	client.SetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo, _ bool, _ bool) {
 		temp, err := json.Marshal(nodes)
 		log.Println(err, string(temp))
 		cancel()

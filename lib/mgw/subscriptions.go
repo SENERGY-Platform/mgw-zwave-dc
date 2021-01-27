@@ -9,28 +9,22 @@ import (
 func (this *Client) registerSubscription(topic string, handler paho.MessageHandler) {
 	this.subscriptionsMux.Lock()
 	defer this.subscriptionsMux.Unlock()
-	this.subscriptions = append(this.subscriptions, Subscription{
-		Topic:   topic,
-		Handler: handler,
-	})
+	this.subscriptions[topic] = handler
 }
 
 func (this *Client) unregisterSubscriptions(topic string) {
 	this.subscriptionsMux.Lock()
 	defer this.subscriptionsMux.Unlock()
-	newList := []Subscription{}
-	for _, e := range this.subscriptions {
-		if e.Topic != topic {
-			newList = append(newList, e)
-		}
-	}
-	this.subscriptions = newList
+	delete(this.subscriptions, topic)
 }
 
-func (this *Client) getSubscriptions() []Subscription {
+func (this *Client) getSubscriptions() (result []Subscription) {
 	this.subscriptionsMux.Lock()
 	defer this.subscriptionsMux.Unlock()
-	return this.subscriptions
+	for topic, handler := range this.subscriptions {
+		result = append(result, Subscription{Topic: topic, Handler: handler})
+	}
+	return
 }
 
 func (this *Client) initSubscriptions() (err error) {

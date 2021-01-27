@@ -42,6 +42,7 @@ type Config struct {
 	ZwaveNetworkEventsTopic string            `json:"zwave_network_events_topic"`
 	TypeMapping             map[string]string `json:"type_mapping"`
 	Debug                   bool              `json:"debug"`
+	DeviceTypeMapping       map[string]string `json:"device_type_mapping"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

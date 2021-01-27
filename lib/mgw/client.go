@@ -14,7 +14,7 @@ type Client struct {
 	mqtt                         paho.Client
 	debug                        bool
 	connectorId                  string
-	subscriptions                []Subscription
+	subscriptions                map[string]paho.MessageHandler
 	subscriptionsMux             sync.Mutex
 	deviceManagerRefreshNotifier func()
 }
@@ -24,6 +24,7 @@ func New(config configuration.Config, ctx context.Context, refreshNotifier func(
 		connectorId:                  config.ConnectorId,
 		debug:                        config.Debug,
 		deviceManagerRefreshNotifier: refreshNotifier,
+		subscriptions:                map[string]paho.MessageHandler{},
 	}
 	lwt := "device-manager/device/" + config.ConnectorId + "/lw"
 	options := paho.NewClientOptions().

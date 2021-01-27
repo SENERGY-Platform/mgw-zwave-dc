@@ -11,7 +11,7 @@ import (
 	"zwave2mqtt-connector/lib/configuration"
 )
 
-type DeviceInfoListener func(nodes []DeviceInfo)
+type DeviceInfoListener func(nodes []DeviceInfo, withValues bool, allKnownDevices bool)
 type ValueEventListener func(value NodeValue)
 
 const GetNodesCommandTopic = "/getNodes"
@@ -66,7 +66,7 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	return client, nil
 }
 
-func (this *Client) SetGetDeviceInfoListener(listener DeviceInfoListener) {
+func (this *Client) SetDeviceInfoListener(listener DeviceInfoListener) {
 	this.deviceInfoListener = listener
 }
 
@@ -90,7 +90,7 @@ func (this *Client) startDefaultListener() error {
 	return nil
 }
 
-func (this *Client) LoadNodes() error {
+func (this *Client) RequestDeviceInfoUpdate() error {
 	return this.SendZwayCommand(GetNodesCommandTopic, []interface{}{})
 }
 
