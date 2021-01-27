@@ -41,7 +41,11 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 		SetCleanSession(true).
 		SetClientID(config.ZwaveMqttClientId).
 		AddBroker(config.ZwaveMqttBroker).
+		SetConnectionLostHandler(func(_ paho.Client, err error) {
+			log.Println("connection to zwave2mqtt broker lost")
+		}).
 		SetOnConnectHandler(func(_ paho.Client) {
+			log.Println("connected to zwave2mqtt broker")
 			err := client.startDefaultListener()
 			if err != nil {
 				log.Fatal("FATAL: ", err)
