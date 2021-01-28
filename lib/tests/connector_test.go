@@ -87,6 +87,7 @@ func TestConnector(t *testing.T) {
 
 	t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient))
 	t.Run("command", testCommands(c, mgwmqttclient, zwavemqttclient))
+	t.Run("event", testEvents(c, mgwmqttclient, zwavemqttclient))
 }
 
 func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
@@ -101,6 +102,39 @@ func testCommands(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttcl
 	return func(t *testing.T) {
 		t.Run("get", testGetCommand(c, mgwmqttclient, zwavemqttclient))
 		t.Run("set", testSetCommand(c, mgwmqttclient, zwavemqttclient))
+	}
+}
+
+func testEvents(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		//check update request
+		eventTopic := "event/test-connector-id:3/113-1-6:get"
+		eventDone, eventReceived := context.WithTimeout(context.Background(), 10*time.Second)
+		token := mgwmqttclient.Subscribe(eventTopic, 2, func(_ paho.Client, message paho.Message) {
+			defer eventReceived()
+			expectedMsg := `{"value":"Door/Window Closed","lastUpdate":1611656048685}`
+			if string(message.Payload()) != expectedMsg {
+				t.Error(string(message.Payload()), "\n", expectedMsg)
+				return
+			}
+		})
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+		defer zwavemqttclient.Unsubscribe(eventTopic)
+
+		//trigger update
+		token = zwavemqttclient.Publish("zwave2mqtt/Test/alarm/access_control", 2, false, `{"value_id":"3-113-1-6","node_id":3,"class_id":113,"type":"list","genre":"user","instance":1,"index":6,"label":"Access Control","units":"","help":"Access Control Alerts","read_only":true,"write_only":false,"min":0,"max":0,"is_polled":false,"values":["Clear","Door/Window Open","Door/Window Closed"],"value":"Door/Window Closed","lastUpdate":1611656048685}`)
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+
+		<-eventDone.Done()
+		if err := eventDone.Err(); err != nil && err != context.Canceled {
+			t.Error("no update request received", err)
+		}
 	}
 }
 
