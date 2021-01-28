@@ -31,6 +31,7 @@ func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, withVal
 			log.Println("ERROR: unable to register device", err)
 			return
 		}
+		deviceInfos[id] = info
 		if withValues {
 			for _, value := range node.Values {
 				this.ValueEventListener(value)
@@ -85,9 +86,19 @@ func (this *Connector) deviceRegisterGetIds() (ids []string) {
 	return
 }
 
+func (this *Connector) deviceRegisterGetAll() (result map[string]mgw.DeviceInfo) {
+	result = map[string]mgw.DeviceInfo{}
+	this.deviceRegisterMux.Lock()
+	defer this.deviceRegisterMux.Unlock()
+	for key, value := range this.deviceRegister {
+		result[key] = value
+	}
+	return
+}
+
 func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo) {
-	for _, id := range this.deviceRegisterGetIds() {
-		info, found := infos[id]
+	for id, info := range this.deviceRegisterGetAll() {
+		_, found := infos[id]
 		if !found {
 			info.State = mgw.Offline
 			err := this.mgwClient.SetDevice(id, info)
