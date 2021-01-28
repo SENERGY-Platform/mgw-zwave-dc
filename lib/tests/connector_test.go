@@ -14,87 +14,105 @@ import (
 )
 
 func TestConnector(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	config, err := configuration.Load("../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	config.ZvaveValueEventTopic = "zwave2mqtt/#"
-	config.ZwaveMqttApiTopic = "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api"
-	config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
+	t.Run("missing devices offline", func(t *testing.T) {
+		c2 := config
+		c2.DeleteMissingDevices = false
+		c2.Debug = true
+		t.Run("run", testConnector(c2))
+	})
 
-	mgwMqttPort, _, err := docker.Mqtt(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	config.MgwMqttBroker = "tcp://localhost:" + mgwMqttPort
-	config.MgwMqttUser = ""
-	config.MgwMqttPw = ""
-	config.MgwMqttClientId = "connector-mgw"
-
-	zwaveMqttPort, _, err := docker.Mqtt(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	config.ZwaveMqttBroker = "tcp://localhost:" + zwaveMqttPort
-	config.ZwaveMqttUser = ""
-	config.ZwaveMqttPw = ""
-	config.ZwaveMqttClientId = "connector-zwave"
-
-	config.Debug = true
-	config.UpdatePeriod = ""
-	config.ConnectorId = "test-connector-id"
-	config.DeviceTypeMapping = map[string]string{
-		"0x0371.0x0002.881-7-2": "test-device-type",
-	}
-
-	c, err := lib.New(config, ctx)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	mgwmqttclient := paho.NewClient(paho.NewClientOptions().
-		SetAutoReconnect(true).
-		SetCleanSession(false).
-		SetClientID("test-client-mgw").
-		AddBroker(config.MgwMqttBroker))
-	if token := mgwmqttclient.Connect(); token.Wait() && token.Error() != nil {
-		log.Println("Error on Mqtt.Connect(): ", token.Error())
-		t.Error(err)
-		return
-	}
-	defer mgwmqttclient.Disconnect(0)
-
-	zwavemqttclient := paho.NewClient(paho.NewClientOptions().
-		SetAutoReconnect(true).
-		SetCleanSession(false).
-		SetClientID("test-client-zwave").
-		AddBroker(config.ZwaveMqttBroker))
-	if token := zwavemqttclient.Connect(); token.Wait() && token.Error() != nil {
-		log.Println("Error on Mqtt.Connect(): ", token.Error())
-		t.Error(err)
-		return
-	}
-	defer zwavemqttclient.Disconnect(0)
-
-	t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient))
-	t.Run("command", testCommands(c, mgwmqttclient, zwavemqttclient))
-	t.Run("event", testEvents(c, mgwmqttclient, zwavemqttclient))
+	t.Run("missing devices delete", func(t *testing.T) {
+		c2 := config
+		c2.DeleteMissingDevices = true
+		c2.Debug = true
+		t.Run("run", testConnector(c2))
+	})
 }
 
-func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+func testConnector(config configuration.Config) func(t *testing.T) {
+	return func(t *testing.T) {
+		wg := &sync.WaitGroup{}
+		defer wg.Wait()
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		config.ZvaveValueEventTopic = "zwave2mqtt/#"
+		config.ZwaveMqttApiTopic = "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api"
+		config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
+
+		mgwMqttPort, _, err := docker.Mqtt(ctx, wg)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		config.MgwMqttBroker = "tcp://localhost:" + mgwMqttPort
+		config.MgwMqttUser = ""
+		config.MgwMqttPw = ""
+		config.MgwMqttClientId = "connector-mgw"
+
+		zwaveMqttPort, _, err := docker.Mqtt(ctx, wg)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		config.ZwaveMqttBroker = "tcp://localhost:" + zwaveMqttPort
+		config.ZwaveMqttUser = ""
+		config.ZwaveMqttPw = ""
+		config.ZwaveMqttClientId = "connector-zwave"
+
+		config.UpdatePeriod = ""
+		config.ConnectorId = "test-connector-id"
+		config.DeviceTypeMapping = map[string]string{
+			"0x0371.0x0002.881-7-2": "test-device-type",
+		}
+
+		c, err := lib.New(config, ctx)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		mgwmqttclient := paho.NewClient(paho.NewClientOptions().
+			SetAutoReconnect(true).
+			SetCleanSession(false).
+			SetClientID("test-client-mgw").
+			AddBroker(config.MgwMqttBroker))
+		if token := mgwmqttclient.Connect(); token.Wait() && token.Error() != nil {
+			log.Println("Error on Mqtt.Connect(): ", token.Error())
+			t.Error(err)
+			return
+		}
+		defer mgwmqttclient.Disconnect(0)
+
+		zwavemqttclient := paho.NewClient(paho.NewClientOptions().
+			SetAutoReconnect(true).
+			SetCleanSession(false).
+			SetClientID("test-client-zwave").
+			AddBroker(config.ZwaveMqttBroker))
+		if token := zwavemqttclient.Connect(); token.Wait() && token.Error() != nil {
+			log.Println("Error on Mqtt.Connect(): ", token.Error())
+			t.Error(err)
+			return
+		}
+		defer zwavemqttclient.Disconnect(0)
+
+		t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient, config.DeleteMissingDevices))
+		t.Run("command", testCommands(c, mgwmqttclient, zwavemqttclient))
+		t.Run("event", testEvents(c, mgwmqttclient, zwavemqttclient))
+	}
+}
+
+func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("check update trigger", checkUpdateTrigger(c, mgwmqttclient, zwavemqttclient))
 		t.Run("check update result", checkUpdateResult(c, mgwmqttclient, zwavemqttclient))
-		t.Run("check update result after remove", checkUpdateResultAfterRemove(c, mgwmqttclient, zwavemqttclient))
+		t.Run("check update result after remove", checkUpdateResultAfterRemove(c, mgwmqttclient, zwavemqttclient, deleteMissingDevices))
 	}
 }
 
@@ -107,7 +125,7 @@ func testCommands(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttcl
 
 func testEvents(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
-		//check update request
+		//check event
 		eventTopic := "event/test-connector-id:3/113-1-6:get"
 		eventDone, eventReceived := context.WithTimeout(context.Background(), 10*time.Second)
 		token := mgwmqttclient.Subscribe(eventTopic, 2, func(_ paho.Client, message paho.Message) {
@@ -124,7 +142,7 @@ func testEvents(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclie
 		}
 		defer zwavemqttclient.Unsubscribe(eventTopic)
 
-		//trigger update
+		//trigger event
 		token = zwavemqttclient.Publish("zwave2mqtt/Test/alarm/access_control", 2, false, `{"value_id":"3-113-1-6","node_id":3,"class_id":113,"type":"list","genre":"user","instance":1,"index":6,"label":"Access Control","units":"","help":"Access Control Alerts","read_only":true,"write_only":false,"min":0,"max":0,"is_polled":false,"values":["Clear","Door/Window Open","Door/Window Closed"],"value":"Door/Window Closed","lastUpdate":1611656048685}`)
 		if token.Wait() && token.Error() != nil {
 			t.Error(token.Error())
@@ -310,7 +328,7 @@ func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client
 }
 
 //dependes on previous call of checkUpdateResult
-func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update
 		deviceInfoTopic := "device-manager/device/test-connector-id"
@@ -327,15 +345,16 @@ func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient 
 		token := mgwmqttclient.Subscribe(deviceInfoTopic, 2, func(_ paho.Client, message paho.Message) {
 			expectedMsg1 := `{"method":"set","device_id":"test-connector-id:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
 			expectedMsg2 := `{"method":"set","device_id":"test-connector-id:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"offline","device_type":"test-device-type"}}`
-			if string(message.Payload()) != expectedMsg1 && string(message.Payload()) != expectedMsg2 {
-				t.Error(string(message.Payload()))
-				return
+			if deleteMissingDevices {
+				expectedMsg2 = `{"method":"delete","device_id":"test-connector-id:4","data":{"name":"","state":"","device_type":""}}`
 			}
 			if string(message.Payload()) == expectedMsg1 {
 				wg1.Done()
-			}
-			if string(message.Payload()) == expectedMsg2 {
+			} else if string(message.Payload()) == expectedMsg2 {
 				wg2.Done()
+			} else {
+				t.Error(string(message.Payload()))
+				return
 			}
 		})
 		if token.Wait() && token.Error() != nil {
