@@ -27,10 +27,10 @@ func Mqtt(ctx context.Context, wg *sync.WaitGroup) (hostPort string, ipAddress s
 		log.Println("DEBUG: remove container " + container.Container.Name)
 		container.Close()
 	}()
-	go Dockerlog(pool, ctx, container, "MQTT-BROKER")
+	//go Dockerlog(pool, ctx, container, "MQTT-BROKER")
 	hostPort = container.GetPort("1883/tcp")
 	err = pool.Retry(func() error {
-		log.Println("DEBUG: try to connection to broker")
+		log.Println("try to connection to broker...")
 		options := paho.NewClientOptions().
 			SetAutoReconnect(true).
 			SetCleanSession(false).

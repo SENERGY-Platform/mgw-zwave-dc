@@ -54,6 +54,10 @@ func (this *Client) startNodeCommandListener() error {
 }
 
 func (this *Client) startNodeEventListener() error {
+	if this.networkEventsTopic == "" || this.networkEventsTopic == "-" {
+		log.Println("WARNING: no zwave network event topic configured --> no live device availability check")
+		return nil
+	}
 	if !this.mqtt.IsConnected() {
 		log.Println("WARNING: mqtt client not connected")
 		return errors.New("mqtt client not connected")

@@ -20,17 +20,20 @@ func TestConnector(t *testing.T) {
 		return
 	}
 
+	config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
+
 	t.Run("missing devices offline", func(t *testing.T) {
 		c2 := config
 		c2.DeleteMissingDevices = false
-		c2.Debug = true
+		c2.Debug = false
 		t.Run("run", testConnector(c2))
 	})
 
 	t.Run("missing devices delete", func(t *testing.T) {
 		c2 := config
 		c2.DeleteMissingDevices = true
-		c2.Debug = true
+		c2.Debug = false
+		c2.ZwaveNetworkEventsTopic = "-"
 		t.Run("run", testConnector(c2))
 	})
 }
@@ -44,7 +47,6 @@ func testConnector(config configuration.Config) func(t *testing.T) {
 
 		config.ZvaveValueEventTopic = "zwave2mqtt/#"
 		config.ZwaveMqttApiTopic = "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api"
-		config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
 
 		mgwMqttPort, _, err := docker.Mqtt(ctx, wg)
 		if err != nil {
