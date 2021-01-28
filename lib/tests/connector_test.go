@@ -86,6 +86,7 @@ func TestConnector(t *testing.T) {
 	defer zwavemqttclient.Disconnect(0)
 
 	t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient))
+	t.Run("command", testCommands(c, mgwmqttclient, zwavemqttclient))
 }
 
 func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
@@ -96,9 +97,15 @@ func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwa
 	}
 }
 
+func testCommands(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Run("get", testGetCommand(c, mgwmqttclient, zwavemqttclient))
+		t.Run("set", testSetCommand(c, mgwmqttclient, zwavemqttclient))
+	}
+}
+
 func checkUpdateTrigger(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
-
 		//check update request
 		requestTopic := "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api/getNodes/set"
 		requestDone, requestReceived := context.WithTimeout(context.Background(), 10*time.Second)
@@ -126,6 +133,95 @@ func checkUpdateTrigger(c *connector.Connector, mgwmqttclient paho.Client, zwave
 		<-requestDone.Done()
 		if err := requestDone.Err(); err != nil && err != context.Canceled {
 			t.Error("no update request received", err)
+		}
+	}
+}
+
+//expects previous run of checkUpdateResult() or checkUpdateResultAfterRemove()
+func testGetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		//check update request
+		responseTopic := "response/test-connector-id:3/113-1-6:get"
+		requestDone, requestReceived := context.WithTimeout(context.Background(), 10*time.Second)
+		token := mgwmqttclient.Subscribe(responseTopic, 2, func(_ paho.Client, message paho.Message) {
+			defer requestReceived()
+			expectedMsg := `{"command_id":"commandId","data":"{\"value\":\"Door/Window Closed\",\"lastUpdate\":1611656048685}"}`
+			if string(message.Payload()) != expectedMsg {
+				t.Error(string(message.Payload()), "\n", expectedMsg)
+				return
+			}
+		})
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+		defer zwavemqttclient.Unsubscribe(responseTopic)
+
+		//trigger update
+		token = mgwmqttclient.Publish("command/test-connector-id:3/113-1-6:get", 2, false, `{"command_id": "commandId", "data": ""}`)
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+
+		<-requestDone.Done()
+		if err := requestDone.Err(); err != nil && err != context.Canceled {
+			t.Error("no update request received", err)
+		}
+	}
+}
+
+func testSetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+	return func(t *testing.T) {
+		//check response
+		responseTopic := "response/test-connector-id:3/67-1-1"
+		requestDone, requestReceived := context.WithTimeout(context.Background(), 10*time.Second)
+		token := mgwmqttclient.Subscribe(responseTopic, 2, func(_ paho.Client, message paho.Message) {
+			defer requestReceived()
+			expectedMsg := `{"command_id":"commandId-2","data":""}`
+			if string(message.Payload()) != expectedMsg {
+				t.Error(string(message.Payload()), "\n", expectedMsg)
+				return
+			}
+		})
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+		defer mgwmqttclient.Unsubscribe(responseTopic)
+
+		//check message to zwave
+		execTopic := "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api/setValue/set"
+		execDone, execReceived := context.WithTimeout(context.Background(), 10*time.Second)
+		token = zwavemqttclient.Subscribe(execTopic, 2, func(_ paho.Client, message paho.Message) {
+			defer execReceived()
+			expectedMsg := `{"args":[3,67,1,1,42]}`
+			if string(message.Payload()) != expectedMsg {
+				t.Error(string(message.Payload()), "\n", expectedMsg)
+				return
+			}
+		})
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+		defer zwavemqttclient.Unsubscribe(execTopic)
+
+		//send command
+		token = mgwmqttclient.Publish("command/test-connector-id:3/67-1-1", 2, false, `{"command_id": "commandId-2", "data": "42"}`)
+		if token.Wait() && token.Error() != nil {
+			t.Error(token.Error())
+			return
+		}
+
+		<-requestDone.Done()
+		if err := requestDone.Err(); err != nil && err != context.Canceled {
+			t.Error("no response received", err)
+		}
+
+		<-execDone.Done()
+		if err := execDone.Err(); err != nil && err != context.Canceled {
+			t.Error("no exec request received", err)
 		}
 	}
 }

@@ -68,8 +68,16 @@ func (this *Connector) parseNodeValueAsMgwEvent(nodeValue zwave2mqtt.NodeValue) 
 		"-" + strconv.FormatInt(nodeValue.Index, 10)
 	deviceId = this.addDeviceIdPrefix(rawDeviceId)
 	serviceId = this.addGetServiceSuffix(rawServiceId)
-	value = nodeValue.Value
+	value = ValueWithTimestamp{
+		Value:      nodeValue.Value,
+		LastUpdate: nodeValue.LastUpdate,
+	}
 	return
+}
+
+type ValueWithTimestamp struct {
+	Value      interface{} `json:"value"`
+	LastUpdate int64       `json:"lastUpdate"`
 }
 
 func (this *Connector) addGetServiceSuffix(rawServiceId string) string {

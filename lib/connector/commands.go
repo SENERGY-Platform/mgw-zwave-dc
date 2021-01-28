@@ -52,4 +52,10 @@ func (this *Connector) handleSetCommand(deviceId string, serviceId string, comma
 		log.Println("ERROR: unable to send value to z2m\n    ", err)
 		return
 	}
+	command.Data = ""
+	err = this.mgwClient.Respond(deviceId, serviceId, command)
+	if err != nil {
+		log.Println("ERROR: unable to send response to mgw", err)
+		return
+	}
 }

@@ -95,7 +95,7 @@ func (this *Client) RequestDeviceInfoUpdate() error {
 }
 
 func (this *Client) SetValue(nodeId int64, classId int64, instanceId int64, index int64, value interface{}) error {
-	return this.SendZwayCommand("setValue", []interface{}{nodeId, classId, instanceId, index, value})
+	return this.SendZwayCommand("/setValue", []interface{}{nodeId, classId, instanceId, index, value})
 }
 
 func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
@@ -108,7 +108,7 @@ func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
 		args = append(args, id)
 	}
 	args = append(args, value)
-	return this.SendZwayCommand("setValue", args)
+	return this.SendZwayCommand("/setValue", args)
 }
 
 func (this *Client) SendZwayCommand(command string, args []interface{}) error {
