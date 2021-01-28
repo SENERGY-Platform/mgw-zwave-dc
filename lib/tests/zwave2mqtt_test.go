@@ -13,6 +13,7 @@ import (
 )
 
 func TestGetNodes(t *testing.T) {
+	t.Skip("manual test with connection to real zwave2mqtt broker")
 	config, err := configuration.Load("./resources/config.json")
 	if err != nil {
 		t.Error(err)
@@ -86,6 +87,7 @@ func TestValueEvents(t *testing.T) {
 }
 
 func TestSetValue(t *testing.T) {
+	t.Skip("manual test with connection to real zwave2mqtt broker")
 	config, err := configuration.Load("./resources/config.json")
 	if err != nil {
 		t.Error(err)

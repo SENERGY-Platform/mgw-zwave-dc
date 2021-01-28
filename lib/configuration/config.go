@@ -40,7 +40,7 @@ type Config struct {
 	ZvaveValueEventTopic    string            `json:"zvave_value_event_topic"`
 	ZwaveMqttApiTopic       string            `json:"zwave_mqtt_api_topic"`
 	ZwaveNetworkEventsTopic string            `json:"zwave_network_events_topic"`
-	TypeMapping             map[string]string `json:"type_mapping"`
+	UpdatePeriod            string            `json:"update_period"`
 	Debug                   bool              `json:"debug"`
 	DeviceTypeMapping       map[string]string `json:"device_type_mapping"`
 }

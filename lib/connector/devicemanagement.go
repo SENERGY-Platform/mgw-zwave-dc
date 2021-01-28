@@ -13,6 +13,9 @@ func (this *Connector) NotifyRefresh() {
 		log.Println("ERROR:", err)
 		debug.PrintStack()
 	}
+	if this.updateTicker != nil {
+		this.updateTicker.Reset(this.updateTickerDuration)
+	}
 }
 
 func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, withValues bool, allKnownDevices bool) {
