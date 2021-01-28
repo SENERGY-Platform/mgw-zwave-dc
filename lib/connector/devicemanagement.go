@@ -101,12 +101,21 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 		_, found := infos[id]
 		if !found {
 			info.State = mgw.Offline
-			err := this.mgwClient.SetDevice(id, info)
-			if err != nil {
-				log.Println("ERROR: unable to send device info (offline) to mgw", err)
-				return
+			if this.deleteMissingDevices {
+				err := this.mgwClient.RemoveDevice(id)
+				if err != nil {
+					log.Println("ERROR: unable to send device info (delete) to mgw", err)
+					return
+				}
+			} else {
+				err := this.mgwClient.SetDevice(id, info)
+				if err != nil {
+					log.Println("ERROR: unable to send device info (offline) to mgw", err)
+					return
+				}
 			}
-			err = this.mgwClient.StopListenToDeviceCommands(id)
+
+			err := this.mgwClient.StopListenToDeviceCommands(id)
 			if err != nil {
 				log.Println("WARNING: unable to stop listening to device commands", err)
 			}

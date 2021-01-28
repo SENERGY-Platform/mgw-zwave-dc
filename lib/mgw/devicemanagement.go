@@ -14,6 +14,13 @@ func (this *Client) SetDevice(deviceId string, info DeviceInfo) error {
 	})
 }
 
+func (this *Client) RemoveDevice(deviceId string) error {
+	return this.SendDeviceUpdate(DeviceInfoUpdate{
+		Method:   "delete",
+		DeviceId: deviceId,
+	})
+}
+
 func (this *Client) SendDeviceUpdate(info DeviceInfoUpdate) error {
 	if !this.mqtt.IsConnected() {
 		log.Println("WARNING: mqtt client not connected")

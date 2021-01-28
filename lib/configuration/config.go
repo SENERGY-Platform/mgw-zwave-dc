@@ -43,6 +43,7 @@ type Config struct {
 	UpdatePeriod            string            `json:"update_period"`
 	Debug                   bool              `json:"debug"`
 	DeviceTypeMapping       map[string]string `json:"device_type_mapping"`
+	DeleteMissingDevices    bool              `json:"delete_missing_devices"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

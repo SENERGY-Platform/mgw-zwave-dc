@@ -23,14 +23,16 @@ type Connector struct {
 	deviceTypeMapping    map[string]string
 	updateTicker         *time.Ticker
 	updateTickerDuration time.Duration
+	deleteMissingDevices bool
 }
 
 func New(config configuration.Config, ctx context.Context) (result *Connector, err error) {
 	result = &Connector{
-		deviceRegister:    map[string]mgw.DeviceInfo{},
-		valueStore:        map[string]interface{}{},
-		connectorId:       config.ConnectorId,
-		deviceTypeMapping: config.DeviceTypeMapping,
+		deviceRegister:       map[string]mgw.DeviceInfo{},
+		valueStore:           map[string]interface{}{},
+		connectorId:          config.ConnectorId,
+		deviceTypeMapping:    config.DeviceTypeMapping,
+		deleteMissingDevices: config.DeleteMissingDevices,
 	}
 	result.z2mClient, err = zwave2mqtt.New(config, ctx)
 	if err != nil {
