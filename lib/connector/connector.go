@@ -57,6 +57,8 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		}()
 	}
 
+	log.Println("initial update request", result.z2mClient.RequestDeviceInfoUpdate())
+
 	return result, nil
 }
 
