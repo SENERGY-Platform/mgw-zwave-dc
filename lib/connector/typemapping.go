@@ -28,7 +28,7 @@ func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, 
 }
 
 func getDefaultName(node zwave2mqtt.DeviceInfo) string {
-	return node.Product + "(" + strconv.FormatInt(node.NodeId, 10) + ")"
+	return node.Product + " (" + strconv.FormatInt(node.NodeId, 10) + ")"
 }
 
 func (this *Connector) getTypeMappingKey(node zwave2mqtt.DeviceInfo) string {
