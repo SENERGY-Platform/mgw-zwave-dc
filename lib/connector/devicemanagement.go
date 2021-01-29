@@ -18,7 +18,7 @@ func (this *Connector) NotifyRefresh() {
 	}
 }
 
-func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, withValues bool, allKnownDevices bool) {
+func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool) {
 	deviceInfos := map[string]mgw.DeviceInfo{}
 	for _, node := range nodes {
 		id, info, err := this.nodeToDeviceInfo(node)
@@ -38,8 +38,12 @@ func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, withVal
 			}
 		}
 	}
+	isSetToOfflineOrDeleted := map[string]bool{}
 	if allKnownDevices {
-		this.unregisterMissingDevices(deviceInfos)
+		isSetToOfflineOrDeleted = this.unregisterMissingDevices(deviceInfos)
+	}
+	if this.husksShouldBeDeleted {
+		this.sendDeleteForHusks(huskIds, isSetToOfflineOrDeleted)
 	}
 }
 
@@ -96,7 +100,8 @@ func (this *Connector) deviceRegisterGetAll() (result map[string]mgw.DeviceInfo)
 	return
 }
 
-func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo) {
+func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo) (handled map[string]bool) {
+	handled = map[string]bool{}
 	for id, info := range this.deviceRegisterGetAll() {
 		_, found := infos[id]
 		if !found {
@@ -120,6 +125,21 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 				log.Println("WARNING: unable to stop listening to device commands", err)
 			}
 			this.deviceRegisterRemove(id)
+			handled[id] = true
+		}
+	}
+	return
+}
+
+func (this *Connector) sendDeleteForHusks(huskIds []int64, alreadyHandled map[string]bool) {
+	for _, huskId := range huskIds {
+		deviceId := this.nodeIdToDeviceId(huskId)
+		if !alreadyHandled[deviceId] {
+			err := this.mgwClient.RemoveDevice(deviceId)
+			if err != nil {
+				log.Println("ERROR: unable to delete husk in mgw", err)
+				return
+			}
 		}
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 //result id with prefix
 func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, info mgw.DeviceInfo, err error) {
-	id = this.addDeviceIdPrefix(strconv.FormatInt(node.NodeId, 10))
+	id = this.nodeIdToDeviceId(node.NodeId)
 	info = mgw.DeviceInfo{
 		Name:  node.Name,
 		State: mgw.Online,

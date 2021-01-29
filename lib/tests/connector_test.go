@@ -26,6 +26,7 @@ func TestConnector(t *testing.T) {
 		c2 := config
 		c2.DeleteMissingDevices = false
 		c2.Debug = false
+		c2.DeleteHusks = false
 		t.Run("run", testConnector(c2))
 	})
 
@@ -33,6 +34,24 @@ func TestConnector(t *testing.T) {
 		c2 := config
 		c2.DeleteMissingDevices = true
 		c2.Debug = false
+		c2.DeleteHusks = false
+		c2.ZwaveNetworkEventsTopic = "-"
+		t.Run("run", testConnector(c2))
+	})
+
+	t.Run("missing devices offline husks delete", func(t *testing.T) {
+		c2 := config
+		c2.DeleteMissingDevices = false
+		c2.Debug = false
+		c2.DeleteHusks = true
+		t.Run("run", testConnector(c2))
+	})
+
+	t.Run("missing devices delete husks delete", func(t *testing.T) {
+		c2 := config
+		c2.DeleteMissingDevices = true
+		c2.Debug = false
+		c2.DeleteHusks = true
 		c2.ZwaveNetworkEventsTopic = "-"
 		t.Run("run", testConnector(c2))
 	})
@@ -104,17 +123,17 @@ func testConnector(config configuration.Config) func(t *testing.T) {
 		}
 		defer zwavemqttclient.Disconnect(0)
 
-		t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient, config.DeleteMissingDevices))
+		t.Run("device-management", deviceManagementTest(c, mgwmqttclient, zwavemqttclient, config.DeleteMissingDevices, config.DeleteHusks))
 		t.Run("command", testCommands(c, mgwmqttclient, zwavemqttclient))
 		t.Run("event", testEvents(c, mgwmqttclient, zwavemqttclient))
 	}
 }
 
-func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool) func(t *testing.T) {
+func deviceManagementTest(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool, deleteHusks bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("check update trigger", checkUpdateTrigger(c, mgwmqttclient, zwavemqttclient))
-		t.Run("check update result", checkUpdateResult(c, mgwmqttclient, zwavemqttclient))
-		t.Run("check update result after remove", checkUpdateResultAfterRemove(c, mgwmqttclient, zwavemqttclient, deleteMissingDevices))
+		t.Run("check update result", checkUpdateResult(c, mgwmqttclient, zwavemqttclient, deleteHusks))
+		t.Run("check update result after remove", checkUpdateResultAfterRemove(c, mgwmqttclient, zwavemqttclient, deleteMissingDevices, deleteHusks))
 	}
 }
 
@@ -280,7 +299,7 @@ func testSetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqtt
 	}
 }
 
-func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
+func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteHusks bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update
 		deviceInfoTopic := "device-manager/device/test-connector-id"
@@ -289,23 +308,36 @@ func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client
 		wg1.Add(1)
 		wg2 := sync.WaitGroup{}
 		wg2.Add(1)
+		wg3 := sync.WaitGroup{}
+		if deleteHusks {
+			wg3.Add(1)
+		}
 		go func() {
 			wg1.Wait()
 			wg2.Wait()
+			wg3.Wait()
 			allDeviceInfosReceived()
 		}()
 		token := mgwmqttclient.Subscribe(deviceInfoTopic, 2, func(_ paho.Client, message paho.Message) {
 			expectedMsg1 := `{"method":"set","device_id":"test-connector-id:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
 			expectedMsg2 := `{"method":"set","device_id":"test-connector-id:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"online","device_type":"test-device-type"}}`
-			if string(message.Payload()) != expectedMsg1 && string(message.Payload()) != expectedMsg2 {
+			expectedMsg3 := `{"method":"delete","device_id":"test-connector-id:2","data":{"name":"","state":"","device_type":""}}`
+
+			switch string(message.Payload()) {
+			case expectedMsg1:
+				wg1.Done()
+			case expectedMsg2:
+				wg2.Done()
+			case expectedMsg3:
+				if deleteHusks {
+					wg3.Done()
+				}
+				if !deleteHusks {
+					t.Error("unexpected husk delete")
+				}
+			default:
 				t.Error(string(message.Payload()))
 				return
-			}
-			if string(message.Payload()) == expectedMsg1 {
-				wg1.Done()
-			}
-			if string(message.Payload()) == expectedMsg2 {
-				wg2.Done()
 			}
 		})
 		if token.Wait() && token.Error() != nil {
@@ -330,7 +362,7 @@ func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client
 }
 
 //dependes on previous call of checkUpdateResult
-func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool) func(t *testing.T) {
+func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool, deleteHusks bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update
 		deviceInfoTopic := "device-manager/device/test-connector-id"
@@ -339,9 +371,14 @@ func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient 
 		wg1.Add(1)
 		wg2 := sync.WaitGroup{}
 		wg2.Add(1)
+		wg3 := sync.WaitGroup{}
+		if deleteHusks {
+			wg3.Add(1)
+		}
 		go func() {
 			wg1.Wait()
 			wg2.Wait()
+			wg3.Wait()
 			allDeviceInfosReceived()
 		}()
 		token := mgwmqttclient.Subscribe(deviceInfoTopic, 2, func(_ paho.Client, message paho.Message) {
@@ -350,11 +387,21 @@ func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient 
 			if deleteMissingDevices {
 				expectedMsg2 = `{"method":"delete","device_id":"test-connector-id:4","data":{"name":"","state":"","device_type":""}}`
 			}
-			if string(message.Payload()) == expectedMsg1 {
+			expectedMsg3 := `{"method":"delete","device_id":"test-connector-id:2","data":{"name":"","state":"","device_type":""}}`
+
+			switch string(message.Payload()) {
+			case expectedMsg1:
 				wg1.Done()
-			} else if string(message.Payload()) == expectedMsg2 {
+			case expectedMsg2:
 				wg2.Done()
-			} else {
+			case expectedMsg3:
+				if deleteHusks {
+					wg3.Done()
+				}
+				if !deleteHusks {
+					t.Error("unexpected husk delete")
+				}
+			default:
 				t.Error(string(message.Payload()))
 				return
 			}

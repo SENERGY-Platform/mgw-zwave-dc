@@ -11,7 +11,7 @@ import (
 	"zwave2mqtt-connector/lib/configuration"
 )
 
-type DeviceInfoListener func(nodes []DeviceInfo, withValues bool, allKnownDevices bool)
+type DeviceInfoListener func(nodes []DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool)
 type ValueEventListener func(value NodeValue)
 
 const GetNodesCommandTopic = "/getNodes"

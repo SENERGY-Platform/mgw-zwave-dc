@@ -125,3 +125,28 @@ func (this DeviceInfo) IsValid() bool {
 	}
 	return true
 }
+
+func (this DeviceInfo) IsHusk() bool {
+	if this.NodeId == 0 || this.NodeId == 1 {
+		return false
+	}
+	if this.Manufacturer != "" {
+		return false
+	}
+	if this.ManufacturerId != "" {
+		return false
+	}
+	if this.Product != "" {
+		return false
+	}
+	if this.ProductId != "" {
+		return false
+	}
+	if this.ProductType != "" {
+		return false
+	}
+	if this.Type != "" {
+		return false
+	}
+	return true
+}

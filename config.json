@@ -13,6 +13,7 @@
     "zwave_network_events_topic":"zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY",
     "update_period":"1h",
     "delete_missing_devices": false,
+    "delete_husks": false,
     "debug":true,
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id"

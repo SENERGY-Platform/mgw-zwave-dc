@@ -24,6 +24,7 @@ type Connector struct {
 	updateTicker         *time.Ticker
 	updateTickerDuration time.Duration
 	deleteMissingDevices bool
+	husksShouldBeDeleted bool
 }
 
 func New(config configuration.Config, ctx context.Context) (result *Connector, err error) {
@@ -33,6 +34,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		connectorId:          config.ConnectorId,
 		deviceTypeMapping:    config.DeviceTypeMapping,
 		deleteMissingDevices: config.DeleteMissingDevices,
+		husksShouldBeDeleted: config.DeleteHusks,
 	}
 	result.z2mClient, err = zwave2mqtt.New(config, ctx)
 	if err != nil {
@@ -88,6 +90,10 @@ func (this *Connector) addGetServiceSuffix(rawServiceId string) string {
 
 func (this *Connector) isGetServiceId(serviceId string) bool {
 	return strings.HasSuffix(serviceId, ":get")
+}
+
+func (this *Connector) nodeIdToDeviceId(nodeId int64) string {
+	return this.addDeviceIdPrefix(strconv.FormatInt(nodeId, 10))
 }
 
 func (this *Connector) addDeviceIdPrefix(rawDeviceId string) string {

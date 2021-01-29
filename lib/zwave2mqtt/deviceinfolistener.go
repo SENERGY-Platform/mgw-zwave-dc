@@ -25,6 +25,7 @@ func (this *Client) startNodeCommandListener() error {
 				return
 			}
 			deviceInfos := []DeviceInfo{}
+			huskIds := []int64{}
 			for _, node := range wrapper.Result {
 				deviceInfo := DeviceInfo{
 					NodeId:         node.NodeId,
@@ -39,11 +40,13 @@ func (this *Client) startNodeCommandListener() error {
 				}
 				if deviceInfo.IsValid() {
 					deviceInfos = append(deviceInfos, deviceInfo)
+				} else if deviceInfo.IsHusk() {
+					huskIds = append(huskIds, deviceInfo.NodeId)
 				} else if this.debug {
 					log.Println("IGNORE:", deviceInfo)
 				}
 			}
-			this.deviceInfoListener(deviceInfos, true, true)
+			this.deviceInfoListener(deviceInfos, huskIds, true, true)
 		}
 	})
 	if token.Wait() && token.Error() != nil {
@@ -107,7 +110,7 @@ func (this *Client) startNodeEventListener() error {
 				Type:           info.Type,
 			}
 			if deviceInfo.IsValid() {
-				this.deviceInfoListener([]DeviceInfo{deviceInfo}, false, false)
+				this.deviceInfoListener([]DeviceInfo{deviceInfo}, []int64{}, false, false)
 			} else if this.debug {
 				log.Println("IGNORE:", deviceInfo)
 			}
