@@ -2,6 +2,7 @@ package connector
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"zwave2mqtt-connector/lib/mgw"
 	"zwave2mqtt-connector/lib/zwave2mqtt"
@@ -21,7 +22,7 @@ func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, 
 	typeMappingKey := this.getTypeMappingKey(node)
 	info.DeviceType, known = this.deviceTypeMapping[typeMappingKey]
 	if !known {
-		err = errors.New("no known mapping for " + typeMappingKey)
+		err = errors.New(fmt.Sprint("no known mapping for node: ", node.NodeId, " product:", node.Product, " mapping-key: ", typeMappingKey))
 		return
 	}
 	return
