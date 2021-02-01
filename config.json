@@ -18,7 +18,7 @@
     "debug":false,
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
-        "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:91e94bf1-f779-4cad-900f-969ff7bed205",
-        "0x0002.0x0005.2-373-5": "urn:infai:ses:device-type:fae6fbac-f280-44c1-8d24-9de1b7862eaf"
+        "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
+        "0x0002.0x0005.2-373-5": "urn:infai:ses:device-type:755d892f-ec47-40ce-926a-59201328c138"
     }
 }
