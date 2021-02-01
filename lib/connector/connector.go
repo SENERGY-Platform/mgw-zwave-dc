@@ -20,6 +20,7 @@ type Connector struct {
 	valueStore           map[string]interface{}
 	valueStoreMux        sync.Mutex
 	connectorId          string
+	deviceIdPrefix       string
 	deviceTypeMapping    map[string]string
 	updateTicker         *time.Ticker
 	updateTickerDuration time.Duration
@@ -32,6 +33,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		deviceRegister:       map[string]mgw.DeviceInfo{},
 		valueStore:           map[string]interface{}{},
 		connectorId:          config.ConnectorId,
+		deviceIdPrefix:       config.DeviceIdPrefix,
 		deviceTypeMapping:    config.DeviceTypeMapping,
 		deleteMissingDevices: config.DeleteMissingDevices,
 		husksShouldBeDeleted: config.DeleteHusks,
@@ -97,9 +99,9 @@ func (this *Connector) nodeIdToDeviceId(nodeId int64) string {
 }
 
 func (this *Connector) addDeviceIdPrefix(rawDeviceId string) string {
-	return this.connectorId + ":" + rawDeviceId
+	return this.deviceIdPrefix + ":" + rawDeviceId
 }
 
 func (this *Connector) removeDeviceIdPrefix(deviceId string) string {
-	return strings.Replace(deviceId, this.connectorId+":", "", 1)
+	return strings.Replace(deviceId, this.deviceIdPrefix+":", "", 1)
 }

@@ -21,6 +21,7 @@ func TestConnector(t *testing.T) {
 	}
 
 	config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
+	config.DeviceIdPrefix = "test-prefix"
 
 	t.Run("missing devices offline", func(t *testing.T) {
 		c2 := config
@@ -147,7 +148,7 @@ func testCommands(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttcl
 func testEvents(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check event
-		eventTopic := "event/test-connector-id:3/113-1-6:get"
+		eventTopic := "event/test-prefix:3/113-1-6:get"
 		eventDone, eventReceived := context.WithTimeout(context.Background(), 10*time.Second)
 		token := mgwmqttclient.Subscribe(eventTopic, 2, func(_ paho.Client, message paho.Message) {
 			defer eventReceived()
@@ -214,7 +215,7 @@ func checkUpdateTrigger(c *connector.Connector, mgwmqttclient paho.Client, zwave
 func testGetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update request
-		responseTopic := "response/test-connector-id:3/113-1-6:get"
+		responseTopic := "response/test-prefix:3/113-1-6:get"
 		requestDone, requestReceived := context.WithTimeout(context.Background(), 10*time.Second)
 		token := mgwmqttclient.Subscribe(responseTopic, 2, func(_ paho.Client, message paho.Message) {
 			defer requestReceived()
@@ -231,7 +232,7 @@ func testGetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqtt
 		defer zwavemqttclient.Unsubscribe(responseTopic)
 
 		//trigger update
-		token = mgwmqttclient.Publish("command/test-connector-id:3/113-1-6:get", 2, false, `{"command_id": "commandId", "data": ""}`)
+		token = mgwmqttclient.Publish("command/test-prefix:3/113-1-6:get", 2, false, `{"command_id": "commandId", "data": ""}`)
 		if token.Wait() && token.Error() != nil {
 			t.Error(token.Error())
 			return
@@ -247,7 +248,7 @@ func testGetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqtt
 func testSetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check response
-		responseTopic := "response/test-connector-id:3/67-1-1"
+		responseTopic := "response/test-prefix:3/67-1-1"
 		requestDone, requestReceived := context.WithTimeout(context.Background(), 10*time.Second)
 		token := mgwmqttclient.Subscribe(responseTopic, 2, func(_ paho.Client, message paho.Message) {
 			defer requestReceived()
@@ -281,7 +282,7 @@ func testSetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqtt
 		defer zwavemqttclient.Unsubscribe(execTopic)
 
 		//send command
-		token = mgwmqttclient.Publish("command/test-connector-id:3/67-1-1", 2, false, `{"command_id": "commandId-2", "data": "42"}`)
+		token = mgwmqttclient.Publish("command/test-prefix:3/67-1-1", 2, false, `{"command_id": "commandId-2", "data": "42"}`)
 		if token.Wait() && token.Error() != nil {
 			t.Error(token.Error())
 			return
@@ -319,9 +320,9 @@ func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client
 			allDeviceInfosReceived()
 		}()
 		token := mgwmqttclient.Subscribe(deviceInfoTopic, 2, func(_ paho.Client, message paho.Message) {
-			expectedMsg1 := `{"method":"set","device_id":"test-connector-id:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
-			expectedMsg2 := `{"method":"set","device_id":"test-connector-id:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"online","device_type":"test-device-type"}}`
-			expectedMsg3 := `{"method":"delete","device_id":"test-connector-id:2","data":{"name":"","state":"","device_type":""}}`
+			expectedMsg1 := `{"method":"set","device_id":"test-prefix:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
+			expectedMsg2 := `{"method":"set","device_id":"test-prefix:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"online","device_type":"test-device-type"}}`
+			expectedMsg3 := `{"method":"delete","device_id":"test-prefix:2","data":{"name":"","state":"","device_type":""}}`
 
 			switch string(message.Payload()) {
 			case expectedMsg1:
@@ -382,12 +383,12 @@ func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient 
 			allDeviceInfosReceived()
 		}()
 		token := mgwmqttclient.Subscribe(deviceInfoTopic, 2, func(_ paho.Client, message paho.Message) {
-			expectedMsg1 := `{"method":"set","device_id":"test-connector-id:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
-			expectedMsg2 := `{"method":"set","device_id":"test-connector-id:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"offline","device_type":"test-device-type"}}`
+			expectedMsg1 := `{"method":"set","device_id":"test-prefix:3","data":{"name":"Test","state":"online","device_type":"test-device-type"}}`
+			expectedMsg2 := `{"method":"set","device_id":"test-prefix:4","data":{"name":"ZWA008 Door Window Sensor 7 (4)","state":"offline","device_type":"test-device-type"}}`
 			if deleteMissingDevices {
-				expectedMsg2 = `{"method":"delete","device_id":"test-connector-id:4","data":{"name":"","state":"","device_type":""}}`
+				expectedMsg2 = `{"method":"delete","device_id":"test-prefix:4","data":{"name":"","state":"","device_type":""}}`
 			}
-			expectedMsg3 := `{"method":"delete","device_id":"test-connector-id:2","data":{"name":"","state":"","device_type":""}}`
+			expectedMsg3 := `{"method":"delete","device_id":"test-prefix:2","data":{"name":"","state":"","device_type":""}}`
 
 			switch string(message.Payload()) {
 			case expectedMsg1:

@@ -29,6 +29,7 @@ import (
 
 type Config struct {
 	ConnectorId             string            `json:"connector_id"`
+	DeviceIdPrefix          string            `json:"device_id_prefix"`
 	ZwaveMqttBroker         string            `json:"zwave_mqtt_broker"`
 	ZwaveMqttUser           string            `json:"zwave_mqtt_user"`
 	ZwaveMqttPw             string            `json:"zwave_mqtt_pw"`
