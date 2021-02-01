@@ -3,7 +3,7 @@ package connector
 import (
 	"encoding/json"
 	"log"
-	"zwave2mqtt-connector/lib/mgw"
+	"mgw-zwave-dc/lib/mgw"
 )
 
 //expects ids from mgw (with prefixes and suffixes)

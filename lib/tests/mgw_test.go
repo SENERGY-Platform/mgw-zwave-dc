@@ -5,13 +5,13 @@ import (
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"math/rand"
+	"mgw-zwave-dc/lib/configuration"
+	"mgw-zwave-dc/lib/mgw"
+	"mgw-zwave-dc/lib/tests/docker"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
-	"zwave2mqtt-connector/lib/configuration"
-	"zwave2mqtt-connector/lib/mgw"
-	"zwave2mqtt-connector/lib/tests/docker"
 )
 
 func TestMgwDeviceManagement(t *testing.T) {

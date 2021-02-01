@@ -4,13 +4,13 @@ import (
 	"context"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"mgw-zwave-dc/lib"
+	"mgw-zwave-dc/lib/configuration"
+	"mgw-zwave-dc/lib/connector"
+	"mgw-zwave-dc/lib/tests/docker"
 	"sync"
 	"testing"
 	"time"
-	"zwave2mqtt-connector/lib"
-	"zwave2mqtt-connector/lib/configuration"
-	"zwave2mqtt-connector/lib/connector"
-	"zwave2mqtt-connector/lib/tests/docker"
 )
 
 func TestConnector(t *testing.T) {

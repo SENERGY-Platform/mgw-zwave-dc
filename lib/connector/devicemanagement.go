@@ -2,9 +2,9 @@ package connector
 
 import (
 	"log"
+	"mgw-zwave-dc/lib/mgw"
+	"mgw-zwave-dc/lib/zwave2mqtt"
 	"runtime/debug"
-	"zwave2mqtt-connector/lib/mgw"
-	"zwave2mqtt-connector/lib/zwave2mqtt"
 )
 
 func (this *Connector) NotifyRefresh() {

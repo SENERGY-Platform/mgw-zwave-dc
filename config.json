@@ -12,10 +12,12 @@
     "zwave_mqtt_api_topic":"zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api",
     "zwave_network_events_topic":"zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY",
     "update_period":"1h",
-    "delete_missing_devices": false,
+    "delete_missing_devices": true,
     "delete_husks": false,
     "debug":true,
     "device_type_mapping": {
-        "ManufacturerId.ProductType.ProductId": "example-device-type-id"
+        "ManufacturerId.ProductType.ProductId": "example-device-type-id",
+        "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:91e94bf1-f779-4cad-900f-969ff7bed205",
+        "0x0002.0x0005.2-373-5": "urn:infai:ses:device-type:fae6fbac-f280-44c1-8d24-9de1b7862eaf"
     }
 }

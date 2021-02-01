@@ -6,9 +6,9 @@ import (
 	"errors"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"mgw-zwave-dc/lib/configuration"
 	"strconv"
 	"strings"
-	"zwave2mqtt-connector/lib/configuration"
 )
 
 type DeviceInfoListener func(nodes []DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool)

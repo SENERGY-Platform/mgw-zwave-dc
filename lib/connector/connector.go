@@ -3,13 +3,13 @@ package connector
 import (
 	"context"
 	"log"
+	"mgw-zwave-dc/lib/configuration"
+	"mgw-zwave-dc/lib/mgw"
+	"mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"zwave2mqtt-connector/lib/configuration"
-	"zwave2mqtt-connector/lib/mgw"
-	"zwave2mqtt-connector/lib/zwave2mqtt"
 )
 
 type Connector struct {

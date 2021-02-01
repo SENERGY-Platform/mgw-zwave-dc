@@ -1,4 +1,4 @@
-module zwave2mqtt-connector
+module mgw-zwave-dc
 
 go 1.15
 

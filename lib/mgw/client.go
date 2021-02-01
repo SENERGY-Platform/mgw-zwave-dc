@@ -4,8 +4,8 @@ import (
 	"context"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"mgw-zwave-dc/lib/configuration"
 	"sync"
-	"zwave2mqtt-connector/lib/configuration"
 )
 
 const DeviceManagerTopic = "device-manager/device"

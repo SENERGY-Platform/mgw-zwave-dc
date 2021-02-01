@@ -4,12 +4,12 @@ import (
 	"context"
 	"flag"
 	"log"
+	"mgw-zwave-dc/lib"
+	"mgw-zwave-dc/lib/configuration"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"zwave2mqtt-connector/lib"
-	"zwave2mqtt-connector/lib/configuration"
 )
 
 func main() {

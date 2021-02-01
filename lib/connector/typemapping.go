@@ -3,9 +3,9 @@ package connector
 import (
 	"errors"
 	"fmt"
+	"mgw-zwave-dc/lib/mgw"
+	"mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
-	"zwave2mqtt-connector/lib/mgw"
-	"zwave2mqtt-connector/lib/zwave2mqtt"
 )
 
 //result id with prefix

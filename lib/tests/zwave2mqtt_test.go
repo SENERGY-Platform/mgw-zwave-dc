@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"math/rand"
+	"mgw-zwave-dc/lib/configuration"
+	"mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
 	"testing"
 	"time"
-	"zwave2mqtt-connector/lib/configuration"
-	"zwave2mqtt-connector/lib/zwave2mqtt"
 )
 
 func TestGetNodes(t *testing.T) {
