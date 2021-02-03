@@ -21,6 +21,8 @@
         "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
         "0x0371.0x0002.0x0007": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
         "0x0002.0x0005.2-373-5": "urn:infai:ses:device-type:755d892f-ec47-40ce-926a-59201328c138",
-        "0x0002.0x0005.0x0175": "urn:infai:ses:device-type:755d892f-ec47-40ce-926a-59201328c138"
+        "0x0002.0x0005.0x0175": "urn:infai:ses:device-type:755d892f-ec47-40ce-926a-59201328c138",
+        "0x010f.0x1a01.0x1000": "urn:infai:ses:device-type:1c13642a-f0d3-4017-86e0-4e058db7f4b6",
+        "0x010f.0x1a01.271-4096-6657": "urn:infai:ses:device-type:1c13642a-f0d3-4017-86e0-4e058db7f4b6"
     }
 }
