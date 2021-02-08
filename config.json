@@ -30,6 +30,15 @@
         "0x010f.0x1b01.271-4096-6913": "urn:infai:ses:device-type:d1ead2cb-ab6e-4a3f-b412-db497ae30971",
 
         "0x0086.0x0002.0x0064": "urn:infai:ses:device-type:ee60a704-77fd-42d4-a489-490b37b5bd82",
-        "0x0086.0x0002.134-100-2": "urn:infai:ses:device-type:ee60a704-77fd-42d4-a489-490b37b5bd82"
+        "0x0086.0x0002.134-100-2": "urn:infai:ses:device-type:ee60a704-77fd-42d4-a489-490b37b5bd82",
+
+        "0x010f.0x1f01.271-4096-7937": "urn:infai:ses:device-type:064a3863-b2d6-4a3c-986c-4ff9b2bccde7",
+        "0x010f.0x1f01.0x1000": "urn:infai:ses:device-type:064a3863-b2d6-4a3c-986c-4ff9b2bccde7",
+
+        "0x010f.0x0602.271-4099-1538": "urn:infai:ses:device-type:2e8cab30-fb31-44d1-bfe1-07411c53d54f",
+        "0x010f.0x0602.0x1000": "urn:infai:ses:device-type:2e8cab30-fb31-44d1-bfe1-07411c53d54f",
+
+        "0x015f.0x0901.351-12546-2305": "urn:infai:ses:device-type:4151d36b-dae6-4cb8-bc94-7dea93964caf",
+        "0x015f.0x0901.0x3102": "urn:infai:ses:device-type:4151d36b-dae6-4cb8-bc94-7dea93964caf"
     }
 }
