@@ -3,10 +3,10 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"log"
 	"math/rand"
-	"mgw-zwave-dc/lib/configuration"
-	"mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
 	"testing"
 	"time"

@@ -2,9 +2,9 @@ package mgw
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
-	"mgw-zwave-dc/lib/configuration"
 	"sync"
 )
 

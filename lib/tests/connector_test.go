@@ -2,12 +2,12 @@ package tests
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/connector"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/tests/docker"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
-	"mgw-zwave-dc/lib"
-	"mgw-zwave-dc/lib/configuration"
-	"mgw-zwave-dc/lib/connector"
-	"mgw-zwave-dc/lib/tests/docker"
 	"sync"
 	"testing"
 	"time"

@@ -2,8 +2,8 @@ package connector
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"log"
-	"mgw-zwave-dc/lib/mgw"
 )
 
 //expects ids from mgw (with prefixes and suffixes)

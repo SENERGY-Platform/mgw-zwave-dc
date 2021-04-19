@@ -1,4 +1,4 @@
-module mgw-zwave-dc
+module github.com/SENERGY-Platform/mgw-zwave-dc
 
 go 1.15
 

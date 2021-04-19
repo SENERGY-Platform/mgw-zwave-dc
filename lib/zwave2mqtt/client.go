@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
-	"mgw-zwave-dc/lib/configuration"
 	"strconv"
 	"strings"
 )

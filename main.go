@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"log"
-	"mgw-zwave-dc/lib"
-	"mgw-zwave-dc/lib/configuration"
 	"os"
 	"os/signal"
 	"syscall"

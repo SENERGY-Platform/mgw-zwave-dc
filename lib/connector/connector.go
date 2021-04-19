@@ -2,10 +2,10 @@ package connector
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"log"
-	"mgw-zwave-dc/lib/configuration"
-	"mgw-zwave-dc/lib/mgw"
-	"mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
 	"strings"
 	"sync"

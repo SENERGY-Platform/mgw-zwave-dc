@@ -3,8 +3,8 @@ package connector
 import (
 	"errors"
 	"fmt"
-	"mgw-zwave-dc/lib/mgw"
-	"mgw-zwave-dc/lib/zwave2mqtt"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"strconv"
 )
 

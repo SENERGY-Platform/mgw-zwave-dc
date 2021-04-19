@@ -1,9 +1,9 @@
 package connector
 
 import (
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"log"
-	"mgw-zwave-dc/lib/mgw"
-	"mgw-zwave-dc/lib/zwave2mqtt"
 	"runtime/debug"
 )
 

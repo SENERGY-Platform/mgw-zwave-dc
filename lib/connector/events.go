@@ -1,8 +1,8 @@
 package connector
 
 import (
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"log"
-	"mgw-zwave-dc/lib/zwave2mqtt"
 )
 
 func (this *Connector) ValueEventListener(nodeValue zwave2mqtt.NodeValue) {
