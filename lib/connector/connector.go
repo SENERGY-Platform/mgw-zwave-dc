@@ -56,8 +56,20 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 			return nil, err
 		}
 		result.updateTicker = time.NewTicker(result.updateTickerDuration)
+
 		go func() {
-			log.Println("send periodical update request to z2m", result.z2mClient.RequestDeviceInfoUpdate())
+			<-ctx.Done()
+			result.updateTicker.Stop()
+		}()
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-result.updateTicker.C:
+					log.Println("send periodical update request to z2m", result.z2mClient.RequestDeviceInfoUpdate())
+				}
+			}
 		}()
 	}
 

@@ -13,7 +13,7 @@ func (this *Connector) NotifyRefresh() {
 		log.Println("ERROR:", err)
 		debug.PrintStack()
 	}
-	if this.updateTicker != nil {
+	if this.updateTicker != nil && this.updateTickerDuration != 0 {
 		this.updateTicker.Reset(this.updateTickerDuration)
 	}
 }
