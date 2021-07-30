@@ -42,6 +42,33 @@
         "0x015f.0x0901.0x3102": "urn:infai:ses:device-type:4151d36b-dae6-4cb8-bc94-7dea93964caf",
 
         "0x0175.0x0001.373-18-1": "urn:infai:ses:device-type:d3caba11-a5f4-4c1c-ae27-0cab5989220b",
-        "0x0175.0x0001.0x0012": "urn:infai:ses:device-type:d3caba11-a5f4-4c1c-ae27-0cab5989220b"
+        "0x0175.0x0001.0x0012": "urn:infai:ses:device-type:d3caba11-a5f4-4c1c-ae27-0cab5989220b",
+
+        "0x010f.0x0801.271-4097-2049": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x1001": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x1002": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x2001": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x2002": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x3001": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+        "0x010f.0x0801.0x3002": "urn:infai:ses:device-type:cecad12c-9e1c-4eb2-9740-919d32a990e0",
+
+
+        "0x0002.0x0005.2-4-5": "urn:infai:ses:device-type:7014e570-838e-472b-ba6e-5ad4b2bb3ca2",
+        "0x0002.0x0005.0x0003": "urn:infai:ses:device-type:7014e570-838e-472b-ba6e-5ad4b2bb3ca2",
+        "0x0002.0x0005.0x0004": "urn:infai:ses:device-type:7014e570-838e-472b-ba6e-5ad4b2bb3ca2",
+        "0x0002.0x0005.0x003": "urn:infai:ses:device-type:7014e570-838e-472b-ba6e-5ad4b2bb3ca2",
+        "0x0002.0x0005.0x004": "urn:infai:ses:device-type:7014e570-838e-472b-ba6e-5ad4b2bb3ca2",
+
+
+        "0x0175.0x0002.373-14-2": "urn:infai:ses:device-type:67a7dd1d-98c3-48f2-ac2f-ad688816ec74",
+        "0x0175.0x0002.0x000e": "urn:infai:ses:device-type:67a7dd1d-98c3-48f2-ac2f-ad688816ec74",
+
+
+        "0x0258.0x0003.600-4237-3": "urn:infai:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
+        "0x0258.0x0003.0x108d": "urn:infai:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
+        "0x0258.0x0003.0x008d": "urn:infai:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
+
+        "0x0086.0x0004.134-80-4": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974",
+        "0x0086.0x0004.0x0050": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974"
     }
 }
