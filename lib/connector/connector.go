@@ -13,30 +13,34 @@ import (
 )
 
 type Connector struct {
-	mgwClient            *mgw.Client
-	z2mClient            *zwave2mqtt.Client
-	deviceRegister       map[string]mgw.DeviceInfo
-	deviceRegisterMux    sync.Mutex
-	valueStore           map[string]interface{}
-	valueStoreMux        sync.Mutex
-	connectorId          string
-	deviceIdPrefix       string
-	deviceTypeMapping    map[string]string
-	updateTicker         *time.Ticker
-	updateTickerDuration time.Duration
-	deleteMissingDevices bool
-	husksShouldBeDeleted bool
+	mgwClient                    *mgw.Client
+	z2mClient                    *zwave2mqtt.Client
+	deviceRegister               map[string]mgw.DeviceInfo
+	deviceRegisterMux            sync.Mutex
+	valueStore                   map[string]interface{}
+	valueStoreMux                sync.Mutex
+	connectorId                  string
+	deviceIdPrefix               string
+	deviceTypeMapping            map[string]string
+	updateTicker                 *time.Ticker
+	updateTickerDuration         time.Duration
+	deleteMissingDevices         bool
+	husksShouldBeDeleted         bool
+	eventsForUnregisteredDevices bool
+	nodeDeviceTypeOverwrite      map[string]string
 }
 
 func New(config configuration.Config, ctx context.Context) (result *Connector, err error) {
 	result = &Connector{
-		deviceRegister:       map[string]mgw.DeviceInfo{},
-		valueStore:           map[string]interface{}{},
-		connectorId:          config.ConnectorId,
-		deviceIdPrefix:       config.DeviceIdPrefix,
-		deviceTypeMapping:    config.DeviceTypeMapping,
-		deleteMissingDevices: config.DeleteMissingDevices,
-		husksShouldBeDeleted: config.DeleteHusks,
+		deviceRegister:               map[string]mgw.DeviceInfo{},
+		valueStore:                   map[string]interface{}{},
+		connectorId:                  config.ConnectorId,
+		deviceIdPrefix:               config.DeviceIdPrefix,
+		deviceTypeMapping:            config.DeviceTypeMapping,
+		deleteMissingDevices:         config.DeleteMissingDevices,
+		husksShouldBeDeleted:         config.DeleteHusks,
+		eventsForUnregisteredDevices: config.EventsForUnregisteredDevices,
+		nodeDeviceTypeOverwrite:      config.NodeDeviceTypeOverwrite,
 	}
 	result.z2mClient, err = zwave2mqtt.New(config, ctx)
 	if err != nil {

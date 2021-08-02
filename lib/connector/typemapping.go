@@ -19,6 +19,14 @@ func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, 
 		info.Name = getDefaultName(node)
 	}
 	var known bool
+
+	if this.nodeDeviceTypeOverwrite != nil {
+		info.DeviceType, known = this.nodeDeviceTypeOverwrite[strconv.FormatInt(node.NodeId, 10)]
+		if known {
+			return id, info, nil
+		}
+	}
+
 	typeMappingKey := this.getTypeMappingKey(node)
 	info.DeviceType, known = this.deviceTypeMapping[typeMappingKey]
 	if !known {

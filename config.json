@@ -16,6 +16,7 @@
     "delete_missing_devices": true,
     "delete_husks": false,
     "debug":false,
+    "events_for_unregistered_devices": false,
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
         "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
@@ -70,5 +71,7 @@
 
         "0x0086.0x0004.134-80-4": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974",
         "0x0086.0x0004.0x0050": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974"
-    }
+    },
+
+    "node_device_type_overwrite": {}
 }

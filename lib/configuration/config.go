@@ -28,24 +28,26 @@ import (
 )
 
 type Config struct {
-	ConnectorId             string            `json:"connector_id"`
-	DeviceIdPrefix          string            `json:"device_id_prefix"`
-	ZwaveMqttBroker         string            `json:"zwave_mqtt_broker"`
-	ZwaveMqttUser           string            `json:"zwave_mqtt_user"`
-	ZwaveMqttPw             string            `json:"zwave_mqtt_pw"`
-	ZwaveMqttClientId       string            `json:"zwave_mqtt_client_id"`
-	MgwMqttBroker           string            `json:"mgw_mqtt_broker"`
-	MgwMqttUser             string            `json:"mgw_mqtt_user"`
-	MgwMqttPw               string            `json:"mgw_mqtt_pw"`
-	MgwMqttClientId         string            `json:"mgw_mqtt_client_id"`
-	ZvaveValueEventTopic    string            `json:"zvave_value_event_topic"`
-	ZwaveMqttApiTopic       string            `json:"zwave_mqtt_api_topic"`
-	ZwaveNetworkEventsTopic string            `json:"zwave_network_events_topic"`
-	UpdatePeriod            string            `json:"update_period"`
-	Debug                   bool              `json:"debug"`
-	DeviceTypeMapping       map[string]string `json:"device_type_mapping"`
-	DeleteMissingDevices    bool              `json:"delete_missing_devices"`
-	DeleteHusks             bool              `json:"delete_husks"`
+	ConnectorId                  string            `json:"connector_id"`
+	DeviceIdPrefix               string            `json:"device_id_prefix"`
+	ZwaveMqttBroker              string            `json:"zwave_mqtt_broker"`
+	ZwaveMqttUser                string            `json:"zwave_mqtt_user"`
+	ZwaveMqttPw                  string            `json:"zwave_mqtt_pw"`
+	ZwaveMqttClientId            string            `json:"zwave_mqtt_client_id"`
+	MgwMqttBroker                string            `json:"mgw_mqtt_broker"`
+	MgwMqttUser                  string            `json:"mgw_mqtt_user"`
+	MgwMqttPw                    string            `json:"mgw_mqtt_pw"`
+	MgwMqttClientId              string            `json:"mgw_mqtt_client_id"`
+	ZvaveValueEventTopic         string            `json:"zvave_value_event_topic"`
+	ZwaveMqttApiTopic            string            `json:"zwave_mqtt_api_topic"`
+	ZwaveNetworkEventsTopic      string            `json:"zwave_network_events_topic"`
+	UpdatePeriod                 string            `json:"update_period"`
+	Debug                        bool              `json:"debug"`
+	DeviceTypeMapping            map[string]string `json:"device_type_mapping"`
+	DeleteMissingDevices         bool              `json:"delete_missing_devices"`
+	DeleteHusks                  bool              `json:"delete_husks"`
+	EventsForUnregisteredDevices bool              `json:"events_for_unregistered_devices"`
+	NodeDeviceTypeOverwrite      map[string]string `json:"node_device_type_overwrite"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
