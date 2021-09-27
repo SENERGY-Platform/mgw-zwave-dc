@@ -70,7 +70,14 @@
         "0x0258.0x0003.0x008d": "urn:infai:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
 
         "0x0086.0x0004.134-80-4": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974",
-        "0x0086.0x0004.0x0050": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974"
+        "0x0086.0x0004.0x0050": "urn:infai:ses:device-type:477d2733-d05d-44b2-a6c2-0ded129bd974",
+
+        "0x010f.0x0b01.271-4099-2817": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770",
+        "0x010f.0x0b01.0x1002": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770",
+        "0x010f.0x0b01.0x1003": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770",
+        "0x010f.0x0b01.0x2002": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770",
+        "0x010f.0x0b01.0x2003": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770",
+        "0x010f.0x0b01.0x3002": "urn:infai:ses:device-type:24b294e8-4676-4782-8dc9-a008c0d94770"
     },
 
     "node_device_type_overwrite": {}
