@@ -279,7 +279,7 @@ func TestMgwEvent(t *testing.T) {
 		return
 	}
 
-	err = client.SendEvent("test-device-id", "test-service-id", map[string]bool{"power": true})
+	err = client.MarshalAndSendEvent("test-device-id", "test-service-id", map[string]bool{"power": true})
 	if err != nil {
 		t.Error(err)
 		return

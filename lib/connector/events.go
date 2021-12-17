@@ -13,7 +13,7 @@ func (this *Connector) ValueEventListener(nodeValue zwave2mqtt.NodeValue) {
 	}
 	if this.eventShouldBeSend(deviceId) {
 		this.saveValue(deviceId, serviceId, value)
-		err = this.mgwClient.SendEvent(deviceId, serviceId, value)
+		err = this.mgwClient.MarshalAndSendEvent(deviceId, serviceId, value)
 		if err != nil {
 			log.Println("ERROR: unable to send event", deviceId, serviceId, err)
 			return
