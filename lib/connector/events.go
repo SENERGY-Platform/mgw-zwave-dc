@@ -9,6 +9,7 @@ func (this *Connector) ValueEventListener(nodeValue zwave2mqtt.NodeValue) {
 	deviceId, serviceId, value, err := this.parseNodeValueAsMgwEvent(nodeValue)
 	if err != nil {
 		log.Println("ERROR: unable to create device-id and service-id for node-value", err)
+		this.mgwClient.SendClientError("unable to create device-id and service-id for node-value: " + err.Error())
 		return
 	}
 	if this.eventShouldBeSend(deviceId) {
@@ -16,6 +17,7 @@ func (this *Connector) ValueEventListener(nodeValue zwave2mqtt.NodeValue) {
 		err = this.mgwClient.MarshalAndSendEvent(deviceId, serviceId, value)
 		if err != nil {
 			log.Println("ERROR: unable to send event", deviceId, serviceId, err)
+			this.mgwClient.SendClientError("unable to send event: " + err.Error())
 			return
 		}
 	}

@@ -25,6 +25,7 @@ type Client struct {
 	networkEventsTopic string
 	deviceInfoListener DeviceInfoListener
 	valueEventListener ValueEventListener
+	forwardErrorMsg    func(msg string)
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
@@ -64,6 +65,16 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	}()
 
 	return client, nil
+}
+
+func (this *Client) ForwardError(msg string) {
+	if this.forwardErrorMsg != nil {
+		this.forwardErrorMsg(msg)
+	}
+}
+
+func (this *Client) SetErrorForwardingFunc(f func(msg string)) {
+	this.forwardErrorMsg = f
 }
 
 func (this *Client) SetDeviceInfoListener(listener DeviceInfoListener) {

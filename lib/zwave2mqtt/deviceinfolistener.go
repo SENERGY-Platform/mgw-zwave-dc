@@ -22,6 +22,7 @@ func (this *Client) startNodeCommandListener() error {
 			err := json.Unmarshal(message.Payload(), &wrapper)
 			if err != nil {
 				log.Println("ERROR: unable to unmarshal getNodes wrapper", err)
+				this.ForwardError("unable to unmarshal getNodes wrapper: " + err.Error())
 				return
 			}
 			deviceInfos := []DeviceInfo{}
@@ -51,6 +52,7 @@ func (this *Client) startNodeCommandListener() error {
 	})
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
 	return nil
@@ -75,28 +77,33 @@ func (this *Client) startNodeEventListener() error {
 			err := json.Unmarshal(message.Payload(), &wrapper)
 			if err != nil {
 				log.Println("ERROR: unable to unmarshal getNodes result", err)
+				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
 				return
 			}
 			if len(wrapper.Data) < 2 {
 				err = errors.New("unexpected node available event value")
 				log.Println(err, message.Payload())
+				this.ForwardError(err.Error())
 				return
 			}
 			nodeIdF, ok := wrapper.Data[0].(float64)
 			if !ok {
 				err = errors.New("unexpected node available event value (unable to cast nodeId)")
 				log.Println(err, message.Payload())
+				this.ForwardError(err.Error())
 				return
 			}
 			temp, err := json.Marshal(wrapper.Data[1])
 			if err != nil {
 				log.Println("ERROR: unable to normalize node available event value", err)
+				this.ForwardError("unable to normalize node available event value: " + err.Error())
 				return
 			}
 			info := NodeInfo{}
 			err = json.Unmarshal(temp, &info)
 			if err != nil {
 				log.Println("ERROR: unable to normalize node available event value (2)", err)
+				this.ForwardError("unable to normalize node available event value (2): " + err.Error())
 				return
 			}
 			deviceInfo := DeviceInfo{
@@ -118,6 +125,7 @@ func (this *Client) startNodeEventListener() error {
 	})
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
 	return nil

@@ -28,6 +28,7 @@ func (this *Client) startValueEventListener() error {
 			err := json.Unmarshal(message.Payload(), &result)
 			if err != nil {
 				log.Println("ERROR: unable to unmarshal getNodes result", err)
+				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
 				return
 			}
 			this.valueEventListener(result)
@@ -35,6 +36,7 @@ func (this *Client) startValueEventListener() error {
 	})
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
 	return nil

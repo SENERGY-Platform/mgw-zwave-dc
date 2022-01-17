@@ -50,6 +50,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 	if err != nil {
 		return nil, err
 	}
+	result.z2mClient.SetErrorForwardingFunc(result.mgwClient.SendClientError)
 	result.z2mClient.SetValueEventListener(result.ValueEventListener)
 	result.z2mClient.SetDeviceInfoListener(result.DeviceInfoListener)
 
@@ -57,6 +58,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		result.updateTickerDuration, err = time.ParseDuration(config.UpdatePeriod)
 		if err != nil {
 			log.Println("ERROR: unable to parse update period as duration")
+			result.mgwClient.SendClientError("unable to parse update period as duration")
 			return nil, err
 		}
 		result.updateTicker = time.NewTicker(result.updateTickerDuration)

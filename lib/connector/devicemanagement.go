@@ -11,6 +11,7 @@ func (this *Connector) NotifyRefresh() {
 	err := this.z2mClient.RequestDeviceInfoUpdate()
 	if err != nil {
 		log.Println("ERROR:", err)
+		this.mgwClient.SendClientError(err.Error())
 		debug.PrintStack()
 	}
 	if this.updateTicker != nil && this.updateTickerDuration != 0 {
@@ -29,6 +30,7 @@ func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, huskIds
 		err = this.registerDevice(id, info)
 		if err != nil {
 			log.Println("ERROR: unable to register device", err)
+			this.mgwClient.SendClientError("unable to register device: " + err.Error())
 			return
 		}
 		deviceInfos[id] = info
@@ -110,12 +112,14 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 				err := this.mgwClient.RemoveDevice(id)
 				if err != nil {
 					log.Println("ERROR: unable to send device info (delete) to mgw", err)
+					this.mgwClient.SendClientError("unable to send device info (delete) to mgw: " + err.Error())
 					return
 				}
 			} else {
 				err := this.mgwClient.SetDevice(id, info)
 				if err != nil {
 					log.Println("ERROR: unable to send device info (offline) to mgw", err)
+					this.mgwClient.SendClientError("unable to send device info (offline) to mgw: " + err.Error())
 					return
 				}
 			}
@@ -123,6 +127,7 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 			err := this.mgwClient.StopListenToDeviceCommands(id)
 			if err != nil {
 				log.Println("WARNING: unable to stop listening to device commands", err)
+				this.mgwClient.SendClientError("unable to stop listening to device commands: " + err.Error())
 			}
 			this.deviceRegisterRemove(id)
 			handled[id] = true
