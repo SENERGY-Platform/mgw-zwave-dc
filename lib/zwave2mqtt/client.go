@@ -9,6 +9,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type DeviceInfoListener func(nodes []DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool)
@@ -42,6 +43,7 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 		SetCleanSession(true).
 		SetClientID(config.ZwaveMqttClientId).
 		AddBroker(config.ZwaveMqttBroker).
+		SetWriteTimeout(10 * time.Second).
 		SetConnectionLostHandler(func(_ paho.Client, err error) {
 			log.Println("connection to zwave2mqtt broker lost")
 		}).
