@@ -44,6 +44,7 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 		SetClientID(config.ZwaveMqttClientId).
 		AddBroker(config.ZwaveMqttBroker).
 		SetWriteTimeout(10 * time.Second).
+		SetOrderMatters(false).
 		SetConnectionLostHandler(func(_ paho.Client, err error) {
 			log.Println("connection to zwave2mqtt broker lost")
 		}).
