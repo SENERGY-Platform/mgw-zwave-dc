@@ -19,6 +19,12 @@
     "events_for_unregistered_devices": false,
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
+
+        "0x010f.0x1201.271-4096-4609": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",
+        "0x010f.0x1201.0x1000": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",
+        "0x010f.0x1201.271-4097-4609": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",
+        "0x010f.0x1201.0x1001": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",
+
         "0x0371.0x0002.881-7-2": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
         "0x0371.0x0002.0x0007": "urn:infai:ses:device-type:491b2c12-6dea-4cb5-bdf5-c773542dddfa",
         "0x0002.0x0005.2-373-5": "urn:infai:ses:device-type:755d892f-ec47-40ce-926a-59201328c138",
