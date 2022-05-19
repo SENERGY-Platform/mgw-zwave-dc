@@ -34,8 +34,8 @@ type NodeInfoResultWrapper struct {
    ]
 }
 */
-type NodeAvailableMessageWrapper struct {
-	Data []interface{} `json:"data"`
+type NodeAvailableMessage struct {
+	Data []NodeInfo `json:"data"`
 }
 
 /*
@@ -122,7 +122,7 @@ Values ids unique strings have changed, in Z2M valueIds were identified by <node
 
 type NodeValue struct {
 	Id           string      `json:"id"`
-	NodeId       int64       `json:"node_id"`
+	NodeId       int64       `json:"nodeId"`
 	CommandClass int64       `json:"commandClass"`
 	Endpoint     int64       `json:"endpoint"`
 	Type         string      `json:"type"`

@@ -19,8 +19,7 @@ type ValueEventListener = func(value model.Value)
 type DeviceStateListener = func(nodeId int64, online bool) error
 
 const GetNodesCommandTopic = "/getNodes"
-const NodeAvailableTopic = "/node_available"
-const NodeValueEventTopic = "/node_value_updated"
+const NodeAvailableTopic = "/node_alive"
 
 type Client struct {
 	mqtt                paho.Client
@@ -103,10 +102,6 @@ func (this *Client) startDefaultListener() error {
 		return err
 	}
 	err = this.startNodeEventListener()
-	if err != nil {
-		return err
-	}
-	err = this.startValueEventListener()
 	if err != nil {
 		return err
 	}

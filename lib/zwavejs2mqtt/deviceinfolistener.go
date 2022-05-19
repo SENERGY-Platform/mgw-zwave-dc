@@ -14,7 +14,7 @@ func (this *Client) startNodeCommandListener() error {
 		log.Println("WARNING: mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
-
+	log.Println("subscribe:", this.apiTopic+GetNodesCommandTopic)
 	token := this.mqtt.Subscribe(this.apiTopic+GetNodesCommandTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.deviceInfoListener != nil {
 			if this.debug {
@@ -69,58 +69,39 @@ func (this *Client) startNodeEventListener() error {
 		return errors.New("mqtt client not connected")
 	}
 
+	log.Println("subscribe:", this.networkEventsTopic+NodeAvailableTopic)
 	token := this.mqtt.Subscribe(this.networkEventsTopic+NodeAvailableTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.deviceInfoListener != nil {
 			if this.debug {
 				log.Println("node available event: \n", string(message.Payload()))
 			}
-			wrapper := NodeAvailableMessageWrapper{}
+			wrapper := NodeAvailableMessage{}
 			err := json.Unmarshal(message.Payload(), &wrapper)
 			if err != nil {
 				log.Println("ERROR: unable to unmarshal getNodes result", err)
 				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
 				return
 			}
-			if len(wrapper.Data) < 2 {
-				err = errors.New("unexpected node available event value")
-				log.Println(err, message.Payload())
-				this.ForwardError(err.Error())
-				return
+
+			for _, info := range wrapper.Data {
+				if info.Id > 1 {
+					deviceInfo := model.DeviceInfo{
+						NodeId:         info.Id,
+						Name:           info.Name,
+						Manufacturer:   info.Manufacturer,
+						ManufacturerId: strconv.FormatInt(info.ManufacturerId, 10),
+						Product:        info.ProductDescription,
+						ProductType:    strconv.FormatInt(info.ProductType, 10),
+						ProductId:      strconv.FormatInt(info.ProductId, 10),
+					}
+					if deviceInfo.IsValid() {
+						this.deviceInfoListener([]model.DeviceInfo{deviceInfo}, []int64{}, false, false)
+					} else if this.debug {
+						log.Println("IGNORE:", deviceInfo)
+					}
+				}
 			}
-			nodeIdF, ok := wrapper.Data[0].(float64)
-			if !ok {
-				err = errors.New("unexpected node available event value (unable to cast nodeId)")
-				log.Println(err, message.Payload())
-				this.ForwardError(err.Error())
-				return
-			}
-			temp, err := json.Marshal(wrapper.Data[1])
-			if err != nil {
-				log.Println("ERROR: unable to normalize node available event value", err)
-				this.ForwardError("unable to normalize node available event value: " + err.Error())
-				return
-			}
-			info := NodeInfo{}
-			err = json.Unmarshal(temp, &info)
-			if err != nil {
-				log.Println("ERROR: unable to normalize node available event value (2)", err)
-				this.ForwardError("unable to normalize node available event value (2): " + err.Error())
-				return
-			}
-			deviceInfo := model.DeviceInfo{
-				NodeId:         int64(nodeIdF),
-				Name:           info.Name,
-				Manufacturer:   info.Manufacturer,
-				ManufacturerId: strconv.FormatInt(info.ManufacturerId, 10),
-				Product:        info.ProductDescription,
-				ProductType:    strconv.FormatInt(info.ProductType, 10),
-				ProductId:      strconv.FormatInt(info.ProductId, 10),
-			}
-			if deviceInfo.IsValid() {
-				this.deviceInfoListener([]model.DeviceInfo{deviceInfo}, []int64{}, false, false)
-			} else if this.debug {
-				log.Println("IGNORE:", deviceInfo)
-			}
+
 		}
 	})
 	if token.Wait() && token.Error() != nil {
