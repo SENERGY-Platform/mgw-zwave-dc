@@ -1,8 +1,9 @@
 package connector
 
 import (
+	"errors"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"log"
 	"runtime/debug"
 )
@@ -19,7 +20,25 @@ func (this *Connector) NotifyRefresh() {
 	}
 }
 
-func (this *Connector) DeviceInfoListener(nodes []zwave2mqtt.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool) {
+func (this *Connector) SetDeviceState(nodeId int64, online bool) error {
+	deviceId := this.nodeIdToDeviceId(nodeId)
+	info, ok := this.deviceRegisterGet(deviceId)
+	if !ok {
+		return errors.New("unknown device")
+	}
+	oldStatus := info.State
+	info.State = mgw.Offline
+	if online {
+		info.State = mgw.Offline
+	}
+	if oldStatus != info.State {
+		this.deviceRegisterSet(deviceId, info)
+		return this.mgwClient.SetDevice(deviceId, info)
+	}
+	return nil
+}
+
+func (this *Connector) DeviceInfoListener(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool) {
 	deviceInfos := map[string]mgw.DeviceInfo{}
 	for _, node := range nodes {
 		id, info, err := this.nodeToDeviceInfo(node)

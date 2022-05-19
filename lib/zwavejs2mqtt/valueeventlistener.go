@@ -1,42 +1,40 @@
-package zwave2mqtt
+package zwavejs2mqtt
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
 )
 
 func (this *Client) startValueEventListener() error {
+	if this.networkEventsTopic == "" || this.networkEventsTopic == "-" {
+		log.Println("WARNING: no zwave network event topic configured --> no event handling")
+		return nil
+	}
 	if !this.mqtt.IsConnected() {
 		log.Println("WARNING: mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 
-	token := this.mqtt.Subscribe(this.valueEventTopic, 2, func(client paho.Client, message paho.Message) {
+	token := this.mqtt.Subscribe(this.networkEventsTopic+NodeValueEventTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.valueEventListener != nil {
-			if !this.isValueEvent(message) {
+			node := NodeInfo{}
+			err := json.Unmarshal(message.Payload(), &node)
+			if err != nil {
+				//is not expected info
 				if this.debug {
-					log.Println("is not value event: \n", string(message.Payload()))
+					log.Println("DEBUG:", this.networkEventsTopic+NodeValueEventTopic, string(message.Payload()))
 				}
 				return
 			}
-			if this.debug {
-				log.Println("value event: \n", string(message.Payload()))
+			for _, value := range node.Values {
+				this.valueEventListener(transformValue(value))
 			}
-			result := model.Value{}
-			err := json.Unmarshal(message.Payload(), &result)
-			if err != nil {
-				log.Println("ERROR: unable to unmarshal getNodes result", err)
-				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
-				return
-			}
-			this.valueEventListener(result)
 		}
 	})
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		log.Println("Error on Subscribe: ", this.networkEventsTopic+NodeValueEventTopic, token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}

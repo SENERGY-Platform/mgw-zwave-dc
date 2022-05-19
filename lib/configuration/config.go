@@ -38,6 +38,8 @@ type Config struct {
 	MgwMqttUser                  string            `json:"mgw_mqtt_user"`
 	MgwMqttPw                    string            `json:"mgw_mqtt_pw"`
 	MgwMqttClientId              string            `json:"mgw_mqtt_client_id"`
+	ZwaveController              string            `json:"zwave_controller"`
+	ZwaveMqttDeviceStateTopic    string            `json:"zwave_mqtt_device_state_topic"`
 	ZvaveValueEventTopic         string            `json:"zvave_value_event_topic"`
 	ZwaveMqttApiTopic            string            `json:"zwave_mqtt_api_topic"`
 	ZwaveNetworkEventsTopic      string            `json:"zwave_network_events_topic"`

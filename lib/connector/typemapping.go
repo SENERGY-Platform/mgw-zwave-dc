@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"strconv"
 )
 
 //result id with prefix
-func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, info mgw.DeviceInfo, err error) {
+func (this *Connector) nodeToDeviceInfo(node model.DeviceInfo) (id string, info mgw.DeviceInfo, err error) {
 	id = this.nodeIdToDeviceId(node.NodeId)
 	info = mgw.DeviceInfo{
 		Name:  node.Name,
@@ -36,10 +36,10 @@ func (this *Connector) nodeToDeviceInfo(node zwave2mqtt.DeviceInfo) (id string, 
 	return
 }
 
-func getDefaultName(node zwave2mqtt.DeviceInfo) string {
+func getDefaultName(node model.DeviceInfo) string {
 	return node.Product + " (" + strconv.FormatInt(node.NodeId, 10) + ")"
 }
 
-func (this *Connector) getTypeMappingKey(node zwave2mqtt.DeviceInfo) string {
+func (this *Connector) getTypeMappingKey(node model.DeviceInfo) string {
 	return node.ManufacturerId + "." + node.ProductType + "." + node.ProductId
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"log"
 	"math/rand"
@@ -26,7 +27,7 @@ func TestGetNodes(t *testing.T) {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	client.SetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo, huskIds []int64, _ bool, _ bool) {
+	client.SetDeviceInfoListener(func(nodes []model.DeviceInfo, huskIds []int64, _ bool, _ bool) {
 		temp, err := json.Marshal(nodes)
 		log.Println(err, string(temp))
 		cancel()
@@ -56,7 +57,7 @@ func TestNodesAvailableEvent(t *testing.T) {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	client.SetDeviceInfoListener(func(nodes []zwave2mqtt.DeviceInfo, huskIds []int64, _ bool, _ bool) {
+	client.SetDeviceInfoListener(func(nodes []model.DeviceInfo, huskIds []int64, _ bool, _ bool) {
 		temp, err := json.Marshal(nodes)
 		log.Println(err, string(temp))
 		cancel()
@@ -79,7 +80,7 @@ func TestValueEvents(t *testing.T) {
 		return
 	}
 	ctx := context.Background()
-	client.SetValueEventListener(func(value zwave2mqtt.NodeValue) {
+	client.SetValueEventListener(func(value model.Value) {
 		temp, err := json.Marshal(value)
 		log.Println(err, string(temp))
 	})

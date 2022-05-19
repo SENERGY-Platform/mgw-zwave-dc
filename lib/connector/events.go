@@ -1,11 +1,11 @@
 package connector
 
 import (
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"log"
 )
 
-func (this *Connector) ValueEventListener(nodeValue zwave2mqtt.NodeValue) {
+func (this *Connector) ValueEventListener(nodeValue model.Value) {
 	deviceId, serviceId, value, err := this.parseNodeValueAsMgwEvent(nodeValue)
 	if err != nil {
 		log.Println("ERROR: unable to create device-id and service-id for node-value", err)

@@ -9,7 +9,9 @@
     "mgw_mqtt_user":"",
     "mgw_mqtt_pw":"",
     "mgw_mqtt_client_id":"mgw-zwave-dc_mgw",
+    "zwave_controller": "zwave2mqtt",
     "zvave_value_event_topic":"zwave2mqtt/#",
+    "zwave_mqtt_device_state_topic": "zwave/#",
     "zwave_mqtt_api_topic":"zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api",
     "zwave_network_events_topic":"zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY",
     "update_period":"15m",
@@ -19,6 +21,8 @@
     "events_for_unregistered_devices": false,
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
+
+        "881.3.2": "urn:infai:ses:device-type:fd8cb8d7-9eb8-47a8-9cf0-f79c6aca445c",
 
         "0x010f.0x1201.271-4096-4609": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",
         "0x010f.0x1201.0x1000": "urn:infai:ses:device-type:c023e15c-5c3c-49b9-b709-8a0ac84a8b84",

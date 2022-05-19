@@ -1,4 +1,4 @@
-package zwave2mqtt
+package zwavejs2mqtt
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"strconv"
 )
 
 func (this *Client) startNodeCommandListener() error {
@@ -30,14 +31,14 @@ func (this *Client) startNodeCommandListener() error {
 			huskIds := []int64{}
 			for _, node := range wrapper.Result {
 				deviceInfo := model.DeviceInfo{
-					NodeId:         node.NodeId,
+					NodeId:         node.Id,
 					Name:           node.Name,
 					Manufacturer:   node.Manufacturer,
-					ManufacturerId: node.ManufacturerId,
-					Product:        node.Product,
-					ProductType:    node.ProductType,
-					ProductId:      node.DeviceId,
-					Values:         node.Values,
+					ManufacturerId: strconv.FormatInt(node.ManufacturerId, 10),
+					Product:        node.ProductDescription,
+					ProductType:    strconv.FormatInt(node.ProductType, 10),
+					ProductId:      strconv.FormatInt(node.ProductId, 10),
+					Values:         transformValues(node.Values),
 				}
 				if deviceInfo.IsValid() {
 					deviceInfos = append(deviceInfos, deviceInfo)
@@ -110,10 +111,10 @@ func (this *Client) startNodeEventListener() error {
 				NodeId:         int64(nodeIdF),
 				Name:           info.Name,
 				Manufacturer:   info.Manufacturer,
-				ManufacturerId: info.ManufacturerId,
-				Product:        info.Product,
-				ProductType:    info.ProductType,
-				ProductId:      info.ProductId,
+				ManufacturerId: strconv.FormatInt(info.ManufacturerId, 10),
+				Product:        info.ProductDescription,
+				ProductType:    strconv.FormatInt(info.ProductType, 10),
+				ProductId:      strconv.FormatInt(info.ProductId, 10),
 			}
 			if deviceInfo.IsValid() {
 				this.deviceInfoListener([]model.DeviceInfo{deviceInfo}, []int64{}, false, false)

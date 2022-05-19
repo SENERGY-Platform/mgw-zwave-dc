@@ -2,9 +2,12 @@ package connector
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwavejs2mqtt"
 	"log"
 	"strconv"
 	"strings"
@@ -12,9 +15,18 @@ import (
 	"time"
 )
 
+type Z2mClient interface {
+	SetErrorForwardingFunc(clientError func(message string))
+	SetValueEventListener(listener func(nodeValue model.Value))
+	SetDeviceInfoListener(listener func(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool))
+	RequestDeviceInfoUpdate() error
+	SetValueByValueId(id string, value interface{}) error
+	SetDeviceStatusListener(state func(nodeId int64, online bool) error)
+}
+
 type Connector struct {
 	mgwClient                    *mgw.Client
-	z2mClient                    *zwave2mqtt.Client
+	z2mClient                    Z2mClient
 	deviceRegister               map[string]mgw.DeviceInfo
 	deviceRegisterMux            sync.Mutex
 	valueStore                   map[string]interface{}
@@ -42,10 +54,21 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		eventsForUnregisteredDevices: config.EventsForUnregisteredDevices,
 		nodeDeviceTypeOverwrite:      config.NodeDeviceTypeOverwrite,
 	}
-	result.z2mClient, err = zwave2mqtt.New(config, ctx)
+
+	switch config.ZwaveController {
+	case "":
+		fallthrough
+	case "zwave2mqtt":
+		result.z2mClient, err = zwave2mqtt.New(config, ctx)
+	case "zwavejs2mqtt":
+		result.z2mClient, err = zwavejs2mqtt.New(config, ctx)
+	default:
+		err = errors.New("unknown zwave controller")
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	result.mgwClient, err = mgw.New(config, ctx, result.NotifyRefresh)
 	if err != nil {
 		return nil, err
@@ -53,6 +76,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 	result.z2mClient.SetErrorForwardingFunc(result.mgwClient.SendClientError)
 	result.z2mClient.SetValueEventListener(result.ValueEventListener)
 	result.z2mClient.SetDeviceInfoListener(result.DeviceInfoListener)
+	result.z2mClient.SetDeviceStatusListener(result.SetDeviceState)
 
 	if config.UpdatePeriod != "" && config.UpdatePeriod != "-" {
 		result.updateTickerDuration, err = time.ParseDuration(config.UpdatePeriod)
@@ -85,11 +109,17 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 }
 
 //returns ids for mgw (with prefixes and suffixes) and the value
-func (this *Connector) parseNodeValueAsMgwEvent(nodeValue zwave2mqtt.NodeValue) (deviceId string, serviceId string, value interface{}, err error) {
+func (this *Connector) parseNodeValueAsMgwEvent(nodeValue model.Value) (deviceId string, serviceId string, value interface{}, err error) {
 	rawDeviceId := strconv.FormatInt(nodeValue.NodeId, 10)
-	rawServiceId := strconv.FormatInt(nodeValue.ClassId, 10) +
-		"-" + strconv.FormatInt(nodeValue.Instance, 10) +
-		"-" + strconv.FormatInt(nodeValue.Index, 10)
+	rawServiceId := nodeValue.ComputedServiceId
+
+	if rawServiceId == "" {
+		//legacy, if Z2mClient didnt calculate service id
+		rawServiceId = strconv.FormatInt(nodeValue.ClassId, 10) +
+			"-" + strconv.FormatInt(nodeValue.Instance, 10) +
+			"-" + strconv.FormatInt(nodeValue.Index, 10)
+	}
+
 	deviceId = this.addDeviceIdPrefix(rawDeviceId)
 	serviceId = this.addGetServiceSuffix(rawServiceId)
 	value = ValueWithTimestamp{

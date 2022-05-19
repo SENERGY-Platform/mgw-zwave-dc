@@ -1,9 +1,10 @@
-package zwave2mqtt
+package zwavejs2mqtt
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -15,24 +16,27 @@ import (
 
 type DeviceInfoListener = func(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool)
 type ValueEventListener = func(value model.Value)
+type DeviceStateListener = func(nodeId int64, online bool) error
 
 const GetNodesCommandTopic = "/getNodes"
 const NodeAvailableTopic = "/node_available"
+const NodeValueEventTopic = "/node_value_updated"
 
 type Client struct {
-	mqtt               paho.Client
-	debug              bool
-	valueEventTopic    string
-	apiTopic           string
-	networkEventsTopic string
-	deviceInfoListener DeviceInfoListener
-	valueEventListener ValueEventListener
-	forwardErrorMsg    func(msg string)
+	mqtt                paho.Client
+	debug               bool
+	apiTopic            string
+	networkEventsTopic  string
+	deviceStateTopic    string
+	deviceInfoListener  DeviceInfoListener
+	valueEventListener  ValueEventListener
+	deviceStateListener DeviceStateListener
+	forwardErrorMsg     func(msg string)
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	client := &Client{
-		valueEventTopic:    config.ZvaveValueEventTopic,
+		deviceStateTopic:   config.ZwaveMqttDeviceStateTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
 		networkEventsTopic: config.ZwaveNetworkEventsTopic,
 		debug:              config.Debug,
@@ -71,8 +75,6 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	return client, nil
 }
 
-func (this *Client) SetDeviceStatusListener(_ func(nodeId int64, online bool) error) {}
-
 func (this *Client) ForwardError(msg string) {
 	if this.forwardErrorMsg != nil {
 		this.forwardErrorMsg(msg)
@@ -91,6 +93,10 @@ func (this *Client) SetValueEventListener(listener ValueEventListener) {
 	this.valueEventListener = listener
 }
 
+func (this *Client) SetDeviceStatusListener(listener func(nodeId int64, online bool) error) {
+	this.deviceStateListener = listener
+}
+
 func (this *Client) startDefaultListener() error {
 	err := this.startNodeCommandListener()
 	if err != nil {
@@ -104,6 +110,10 @@ func (this *Client) startDefaultListener() error {
 	if err != nil {
 		return err
 	}
+	err = this.startDeviceStateListener()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -111,21 +121,50 @@ func (this *Client) RequestDeviceInfoUpdate() error {
 	return this.SendZwayCommand(GetNodesCommandTopic, []interface{}{})
 }
 
-func (this *Client) SetValue(nodeId int64, classId int64, instanceId int64, index int64, value interface{}) error {
-	return this.SendZwayCommand("/setValue", []interface{}{nodeId, classId, instanceId, index, value})
+type ValueID struct {
+	NodeId       int64       `json:"nodeId"`
+	CommandClass int64       `json:"commandClass"`
+	Endpoint     int64       `json:"endpoint"`
+	Property     interface{} `json:"property"`
+	PropertyKey  interface{} `json:"propertyKey,omitempty"`
+}
+
+//2-38-0-targetValue
+//<nodeId>/<commandClass>/<endpoint>/<property>/<propertyKey?>
+func parseValueId(id string) (valueId ValueID, err error) {
+	for i, part := range strings.Split(id, "-") {
+		switch i {
+		case 0:
+			valueId.NodeId, err = strconv.ParseInt(part, 10, 64)
+			if err != nil {
+				return valueId, fmt.Errorf("unable to format value id %v: %w", id, err)
+			}
+		case 1:
+			valueId.CommandClass, err = strconv.ParseInt(part, 10, 64)
+			if err != nil {
+				return valueId, fmt.Errorf("unable to format value id %v: %w", id, err)
+			}
+		case 2:
+			valueId.Endpoint, err = strconv.ParseInt(part, 10, 64)
+			if err != nil {
+				return valueId, fmt.Errorf("unable to format value id %v: %w", id, err)
+			}
+		case 3:
+			valueId.Property = part
+		case 4:
+			valueId.PropertyKey = part
+		}
+	}
+	return valueId, nil
 }
 
 func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
-	args := []interface{}{}
-	for _, v := range strings.Split(valueId, "-") {
-		id, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			return err
-		}
-		args = append(args, id)
+	valueIdObject, err := parseValueId(valueId)
+	if err != nil {
+		return err
 	}
-	args = append(args, value)
-	return this.SendZwayCommand("/setValue", args)
+	args := []interface{}{valueIdObject, value}
+	return this.SendZwayCommand("/writeValue", args)
 }
 
 func (this *Client) SendZwayCommand(command string, args []interface{}) error {
