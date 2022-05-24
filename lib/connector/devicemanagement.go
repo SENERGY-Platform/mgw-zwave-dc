@@ -26,16 +26,12 @@ func (this *Connector) SetDeviceState(nodeId int64, online bool) error {
 	if !ok {
 		return errors.New("unknown device")
 	}
-	oldStatus := info.State
 	info.State = mgw.Offline
 	if online {
 		info.State = mgw.Offline
 	}
-	if oldStatus != info.State {
-		this.deviceRegisterSet(deviceId, info)
-		return this.mgwClient.SetDevice(deviceId, info)
-	}
-	return nil
+	this.deviceRegisterSet(deviceId, info)
+	return this.mgwClient.SetDevice(deviceId, info)
 }
 
 func (this *Connector) DeviceInfoListener(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool) {
@@ -128,6 +124,7 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 		if !found {
 			info.State = mgw.Offline
 			if this.deleteMissingDevices {
+				log.Println("WARNING: remove missing device:", id)
 				err := this.mgwClient.RemoveDevice(id)
 				if err != nil {
 					log.Println("ERROR: unable to send device info (delete) to mgw", err)
@@ -135,6 +132,7 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 					return
 				}
 			} else {
+				log.Println("WARNING: set missing device offline:", id)
 				err := this.mgwClient.SetDevice(id, info)
 				if err != nil {
 					log.Println("ERROR: unable to send device info (offline) to mgw", err)

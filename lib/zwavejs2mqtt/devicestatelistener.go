@@ -55,13 +55,11 @@ func (this *Client) handleDeviceStateMessage(topic string, payload []byte) {
 			//is not device status
 			return
 		}
-		if this.debug {
-			log.Println("device state update: \n", string(payload))
-		}
 		if msg.NodeId > 1 {
+			log.Println("device state update: ", msg.NodeId, msg.Status, msg.Status == "Alive")
 			err = this.deviceStateListener(msg.NodeId, msg.Status == "Alive")
-			if this.debug {
-				log.Println("device state update result:", err)
+			if err != nil {
+				log.Println("ERROR: unable to update device state:", err)
 			}
 		}
 	}
