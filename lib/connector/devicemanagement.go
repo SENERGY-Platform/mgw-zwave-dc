@@ -28,7 +28,7 @@ func (this *Connector) SetDeviceState(nodeId int64, online bool) error {
 	}
 	info.State = mgw.Offline
 	if online {
-		info.State = mgw.Offline
+		info.State = mgw.Online
 	}
 	this.deviceRegisterSet(deviceId, info)
 	return this.mgwClient.SetDevice(deviceId, info)
