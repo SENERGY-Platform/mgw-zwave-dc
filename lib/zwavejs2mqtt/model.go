@@ -174,7 +174,7 @@ func transformValue(value NodeValue) (result model.Value) {
 		Values:            value.Values,
 		Value:             value.Value,
 		LastUpdate:        value.LastUpdate,
-		ComputedServiceId: strings.TrimPrefix(value.Id, strconv.FormatInt(value.NodeId, 10)+"-"),
+		ComputedServiceId: strings.ReplaceAll(strings.TrimPrefix(value.Id, strconv.FormatInt(value.NodeId, 10)+"-"), "/", "_"),
 	}
 }
 
