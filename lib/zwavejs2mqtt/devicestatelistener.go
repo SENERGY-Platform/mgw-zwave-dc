@@ -47,6 +47,13 @@ func validValueEvent(value NodeValue) bool {
 		value.LastUpdate != 0
 }
 
+type DeviceState = string
+
+const DEAD DeviceState = "Dead"
+const UNKNOWN DeviceState = "Unknown"
+const ALIVE DeviceState = "Alive"
+const ASLEEP DeviceState = "Asleep"
+
 func (this *Client) handleDeviceStateMessage(topic string, payload []byte) {
 	if this.deviceStateListener != nil && strings.HasSuffix(topic, "/status") {
 		msg := DeviceStateMsg{}
@@ -56,8 +63,14 @@ func (this *Client) handleDeviceStateMessage(topic string, payload []byte) {
 			return
 		}
 		if msg.NodeId > 1 {
-			log.Println("device state update: ", msg.NodeId, msg.Status, msg.Status == "Alive")
-			err = this.deviceStateListener(msg.NodeId, msg.Status == "Alive")
+			if msg.Status == ALIVE || msg.Status == ASLEEP {
+				log.Println("device state update: ", msg.NodeId, msg.Status)
+				err = this.deviceStateListener(msg.NodeId, true)
+			}
+			if msg.Status == DEAD {
+				log.Println("device state update: ", msg.NodeId, msg.Status)
+				err = this.deviceStateListener(msg.NodeId, false)
+			}
 			if err != nil {
 				log.Println("ERROR: unable to update device state:", err)
 			}
