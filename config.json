@@ -22,6 +22,14 @@
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
 
+        "271-2049-4097": "urn:infai:ses:device-type:b2c5ecb0-4262-4733-aa44-93c4868d484e",
+        "271-3841-4096": "urn:infai:ses:device-type:4e3b149a-489c-41f3-854f-a2609132f6a8",
+        "600-3-4237": "urn:infai,:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
+        "2-5-4": "urn:infai,:ses:device-type:a90610ea-5028-4227-b91c-e8abebbf9526",
+        "373-2-14": "urn:infai,:ses:device-type:8d10ebe7-b633-481e-8c7f-c57b5eb8df7d",
+        "373-1-18": "urn:infai,:ses:device-type:883faa90-a5aa-438b-b5fd-62edac189fd3",
+        "134-4-80": "urn:infai,:ses:device-type:0bc41c1b-e347-442b-80c2-6cba21197062 ",
+
         "881.2.11": "urn:infai:ses:device-type:c5584a6a-75f3-4867-b2d6-ef108d4d6c96",
         "881.3.2": "urn:infai:ses:device-type:fd8cb8d7-9eb8-47a8-9cf0-f79c6aca445c",
         "134.2.100": "urn:infai:ses:device-type:c5be8ef7-5159-437d-84ac-5f618d273061",
