@@ -22,6 +22,7 @@
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
 
+        "1027.3.2": "urn:infai:ses:device-type:10e11d97-3501-4103-a587-f9e75a493598",
         "271.2049.4097": "urn:infai:ses:device-type:b2c5ecb0-4262-4733-aa44-93c4868d484e",
         "271.3841.4096": "urn:infai:ses:device-type:4e3b149a-489c-41f3-854f-a2609132f6a8",
         "600.3.4237": "urn:infai:ses:device-type:3cd9a6c4-9b9a-4ed6-872c-c74ddc79e375",
