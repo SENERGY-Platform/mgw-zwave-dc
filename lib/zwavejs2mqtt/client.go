@@ -147,7 +147,11 @@ func parseValueId(id string) (valueId ValueID, err error) {
 		case 3:
 			valueId.Property = part
 		case 4:
-			valueId.PropertyKey = part
+			valueId.PropertyKey, err = strconv.ParseInt(part, 10, 64)
+			if err != nil {
+				err = nil
+				valueId.PropertyKey = part
+			}
 		}
 	}
 	return valueId, nil
