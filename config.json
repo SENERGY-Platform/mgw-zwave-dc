@@ -22,6 +22,12 @@
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",
 
+        "345.7.84": "urn:infai:ses:device-type:877ede3a-26b7-406d-93a9-c40c0dbfed75",
+        "351.2305.12546": "urn:infai:ses:device-type:26078810-305a-453b-ade1-8866a835a4ee",
+        "271.2817.4099": "urn:infai:ses:device-type:510b0b9b-e3c7-4d08-8aa7-b66a15256adf",
+        "271.6913.4096": "urn:infai:ses:device-type:2f5c5b64-cf71-4a59-861f-73a010361035",
+        "271.7937.4096": "urn:infai:ses:device-type:720b4ec5-8d78-415f-8eb4-09cadf9b78d1",
+
         "2.5.373": "urn:infai:ses:device-type:27132ce1-c57d-459c-a1c0-a17d4f0ee972",
 
         "881.2.7":"urn:infai:ses:device-type:c5584a6a-75f3-4867-b2d6-ef108d4d6c96",
