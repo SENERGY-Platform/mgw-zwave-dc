@@ -9,6 +9,7 @@ import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwavejs2mqtt"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -108,7 +109,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 	return result, nil
 }
 
-//returns ids for mgw (with prefixes and suffixes) and the value
+// returns ids for mgw (with prefixes and suffixes) and the value
 func (this *Connector) parseNodeValueAsMgwEvent(nodeValue model.Value) (deviceId string, serviceId string, value interface{}, err error) {
 	rawDeviceId := strconv.FormatInt(nodeValue.NodeId, 10)
 	rawServiceId := nodeValue.ComputedServiceId
@@ -119,6 +120,8 @@ func (this *Connector) parseNodeValueAsMgwEvent(nodeValue model.Value) (deviceId
 			"-" + strconv.FormatInt(nodeValue.Instance, 10) +
 			"-" + strconv.FormatInt(nodeValue.Index, 10)
 	}
+
+	rawServiceId = encodeLocalId(rawServiceId)
 
 	deviceId = this.addDeviceIdPrefix(rawDeviceId)
 	serviceId = this.addGetServiceSuffix(rawServiceId)
@@ -152,4 +155,23 @@ func (this *Connector) addDeviceIdPrefix(rawDeviceId string) string {
 
 func (this *Connector) removeDeviceIdPrefix(deviceId string) string {
 	return strings.Replace(deviceId, this.deviceIdPrefix+":", "", 1)
+}
+
+const escapedChars = "+#/" // % is implicitly escaped because the encoded values contain a %
+
+func encodeLocalId(raw string) (encoded string) {
+	encoded = strings.ReplaceAll(raw, "%", url.QueryEscape("%"))
+	for _, char := range escapedChars {
+		encoded = strings.ReplaceAll(encoded, string(char), url.QueryEscape(string(char)))
+	}
+	return
+}
+
+func decodeLocalId(encoded string) (decoded string) {
+	decoded = encoded
+	for _, char := range escapedChars {
+		decoded = strings.ReplaceAll(decoded, url.QueryEscape(string(char)), string(char))
+	}
+	decoded = strings.ReplaceAll(decoded, url.QueryEscape("%"), "%")
+	return
 }
