@@ -34,6 +34,7 @@ type Client struct {
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
+	log.Println("start zwavejs2mqtt client")
 	client := &Client{
 		deviceStateTopic:   config.ZwaveMqttDeviceStateTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
@@ -124,8 +125,8 @@ type ValueID struct {
 	PropertyKey  interface{} `json:"propertyKey,omitempty"`
 }
 
-//2-38-0-targetValue
-//<nodeId>/<commandClass>/<endpoint>/<property>/<propertyKey?>
+// 2-38-0-targetValue
+// <nodeId>/<commandClass>/<endpoint>/<property>/<propertyKey?>
 func parseValueId(id string) (valueId ValueID, err error) {
 	for i, part := range strings.Split(id, "-") {
 		switch i {

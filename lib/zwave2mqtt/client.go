@@ -31,6 +31,7 @@ type Client struct {
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
+	log.Println("start zwave2mqtt client")
 	client := &Client{
 		valueEventTopic:    config.ZvaveValueEventTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
