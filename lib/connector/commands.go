@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-//expects ids from mgw (with prefixes and suffixes)
+// expects ids from mgw (with prefixes and suffixes)
 func (this *Connector) CommandHandler(deviceId string, serviceId string, command mgw.Command) {
 	if this.isGetServiceId(serviceId) {
 		this.handleGetCommand(deviceId, serviceId, command)
@@ -15,7 +15,7 @@ func (this *Connector) CommandHandler(deviceId string, serviceId string, command
 	}
 }
 
-//expects ids from mgw (with prefixes and suffixes)
+// expects ids from mgw (with prefixes and suffixes)
 func (this *Connector) handleGetCommand(deviceId string, serviceId string, command mgw.Command) {
 	value, known := this.getValue(deviceId, serviceId)
 	if known {
@@ -39,9 +39,9 @@ func (this *Connector) handleGetCommand(deviceId string, serviceId string, comma
 	}
 }
 
-//expects ids from mgw (with prefixes and suffixes)
+// expects ids from mgw (with prefixes and suffixes)
 func (this *Connector) handleSetCommand(deviceId string, serviceId string, command mgw.Command) {
-	valueId := this.removeDeviceIdPrefix(deviceId) + "-" + serviceId
+	valueId := this.removeDeviceIdPrefix(deviceId) + "-" + decodeLocalId(serviceId)
 	var value interface{}
 	err := json.Unmarshal([]byte(command.Data), &value)
 	if err != nil {
