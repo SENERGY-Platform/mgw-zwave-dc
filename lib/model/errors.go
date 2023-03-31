@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package connector
+package model
 
-// expects ids from mgw (with prefixes and suffixes)
-func (this *Connector) saveValue(deviceId string, serviceId string, value interface{}) {
-	this.valueStoreMux.Lock()
-	defer this.valueStoreMux.Unlock()
-	this.valueStore[deviceId+"-"+serviceId] = value
-}
+import "errors"
 
-// expects ids from mgw (with prefixes and suffixes)
-func (this *Connector) getValue(deviceId string, serviceId string) (value interface{}, known bool) {
-	this.valueStoreMux.Lock()
-	defer this.valueStoreMux.Unlock()
-	value, known = this.valueStore[deviceId+"-"+serviceId]
-	return
-}
+var ErrNotFound = errors.New("not found")
+var ErrNoValueFound = errors.New("no value found")
+var ErrNotReady = errors.New("not ready")
+var NoMatchingDeviceTypeFound = errors.New("unable to find matching device type")

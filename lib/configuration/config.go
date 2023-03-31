@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 InfAI (CC SES)
+ * Copyright (c) 2023 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,29 @@ type Config struct {
 	DeleteHusks                  bool              `json:"delete_husks"`
 	EventsForUnregisteredDevices bool              `json:"events_for_unregistered_devices"`
 	NodeDeviceTypeOverwrite      map[string]string `json:"node_device_type_overwrite"`
+
+	AuthEndpoint             string  `json:"auth_endpoint"`
+	AuthClientId             string  `json:"auth_client_id"`
+	AuthExpirationTimeBuffer float64 `json:"auth_expiration_time_buffer"`
+	AuthUsername             string  `json:"auth_username"`
+	AuthPassword             string  `json:"auth_password"`
+
+	DeviceManagerUrl     string `json:"device_manager_url"`
+	PermissionsSearchUrl string `json:"permissions_search_url"`
+	FallbackFile         string `json:"fallback_file"`
+	MinCacheDuration     string `json:"min_cache_duration"`
+	MaxCacheDuration     string `json:"max_cache_duration"`
+
+	CreateMissingDeviceTypes                         bool   `json:"create_missing_device_types"`
+	CreateMissingDeviceTypesWithDeviceClass          string `json:"create_missing_device_types_with_device_class"`
+	CreateMissingDeviceTypesWithProtocol             string `json:"create_missing_device_types_with_protocol"`
+	CreateMissingDeviceTypesWithProtocolSegment      string `json:"create_missing_device_types_with_protocol_segment"`
+	CreateMissingDeviceTypesLastUpdateFunction       string `json:"create_missing_device_types_last_update_function"`
+	CreateMissingDeviceTypesLastUpdateCharacteristic string `json:"create_missing_device_types_last_update_characteristic"`
+	DisownCreatedDeviceTypes                         bool   `json:"disown_created_device_types"`
 }
 
-//loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
+// loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
 func Load(location string) (config Config, err error) {
 	file, error := os.Open(location)
 	if error != nil {

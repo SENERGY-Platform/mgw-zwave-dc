@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023 InfAI (CC SES)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package tests
 
 import (
@@ -211,7 +227,7 @@ func checkUpdateTrigger(c *connector.Connector, mgwmqttclient paho.Client, zwave
 	}
 }
 
-//expects previous run of checkUpdateResult() or checkUpdateResultAfterRemove()
+// expects previous run of checkUpdateResult() or checkUpdateResultAfterRemove()
 func testGetCommand(c *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update request
@@ -362,7 +378,7 @@ func checkUpdateResult(connector *connector.Connector, mgwmqttclient paho.Client
 	}
 }
 
-//dependes on previous call of checkUpdateResult
+// dependes on previous call of checkUpdateResult
 func checkUpdateResultAfterRemove(connector *connector.Connector, mgwmqttclient paho.Client, zwavemqttclient paho.Client, deleteMissingDevices bool, deleteHusks bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		//check update

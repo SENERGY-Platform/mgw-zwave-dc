@@ -1,15 +1,33 @@
+/*
+ * Copyright (c) 2023 InfAI (CC SES)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package connector
 
 import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo/auth"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwavejs2mqtt"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,7 +43,13 @@ type Z2mClient interface {
 	SetDeviceStatusListener(state func(nodeId int64, online bool) error)
 }
 
+type DeviceRepo interface {
+	FindDeviceTypeId(device model.DeviceInfo) (dtId string, usedFallback bool, err error)
+	CreateDeviceType(key string, dt models.DeviceType) (result models.DeviceType, code int, err error)
+}
+
 type Connector struct {
+	config                       configuration.Config
 	mgwClient                    *mgw.Client
 	z2mClient                    Z2mClient
 	deviceRegister               map[string]mgw.DeviceInfo
@@ -41,10 +65,12 @@ type Connector struct {
 	husksShouldBeDeleted         bool
 	eventsForUnregisteredDevices bool
 	nodeDeviceTypeOverwrite      map[string]string
+	devicerepo                   DeviceRepo
 }
 
 func New(config configuration.Config, ctx context.Context) (result *Connector, err error) {
 	result = &Connector{
+		config:                       config,
 		deviceRegister:               map[string]mgw.DeviceInfo{},
 		valueStore:                   map[string]interface{}{},
 		connectorId:                  config.ConnectorId,
@@ -54,6 +80,11 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		husksShouldBeDeleted:         config.DeleteHusks,
 		eventsForUnregisteredDevices: config.EventsForUnregisteredDevices,
 		nodeDeviceTypeOverwrite:      config.NodeDeviceTypeOverwrite,
+	}
+
+	result.devicerepo, err = devicerepo.New(config, &auth.Auth{})
+	if err != nil {
+		return nil, err
 	}
 
 	switch config.ZwaveController {
@@ -111,20 +142,9 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 
 // returns ids for mgw (with prefixes and suffixes) and the value
 func (this *Connector) parseNodeValueAsMgwEvent(nodeValue model.Value) (deviceId string, serviceId string, value interface{}, err error) {
+	serviceId = nodeValue.GetServiceId(true)
 	rawDeviceId := strconv.FormatInt(nodeValue.NodeId, 10)
-	rawServiceId := nodeValue.ComputedServiceId
-
-	if rawServiceId == "" {
-		//legacy, if Z2mClient didnt calculate service id
-		rawServiceId = strconv.FormatInt(nodeValue.ClassId, 10) +
-			"-" + strconv.FormatInt(nodeValue.Instance, 10) +
-			"-" + strconv.FormatInt(nodeValue.Index, 10)
-	}
-
-	rawServiceId = encodeLocalId(rawServiceId)
-
 	deviceId = this.addDeviceIdPrefix(rawDeviceId)
-	serviceId = this.addGetServiceSuffix(rawServiceId)
 	value = ValueWithTimestamp{
 		Value:      nodeValue.Value,
 		LastUpdate: nodeValue.LastUpdate,
@@ -135,10 +155,6 @@ func (this *Connector) parseNodeValueAsMgwEvent(nodeValue model.Value) (deviceId
 type ValueWithTimestamp struct {
 	Value      interface{} `json:"value"`
 	LastUpdate int64       `json:"lastUpdate"`
-}
-
-func (this *Connector) addGetServiceSuffix(rawServiceId string) string {
-	return rawServiceId + ":get"
 }
 
 func (this *Connector) isGetServiceId(serviceId string) bool {
@@ -155,23 +171,4 @@ func (this *Connector) addDeviceIdPrefix(rawDeviceId string) string {
 
 func (this *Connector) removeDeviceIdPrefix(deviceId string) string {
 	return strings.Replace(deviceId, this.deviceIdPrefix+":", "", 1)
-}
-
-const escapedChars = "+#/" // % is implicitly escaped because the encoded values contain a %
-
-func encodeLocalId(raw string) (encoded string) {
-	encoded = strings.ReplaceAll(raw, "%", url.QueryEscape("%"))
-	for _, char := range escapedChars {
-		encoded = strings.ReplaceAll(encoded, string(char), url.QueryEscape(string(char)))
-	}
-	return
-}
-
-func decodeLocalId(encoded string) (decoded string) {
-	decoded = encoded
-	for _, char := range escapedChars {
-		decoded = strings.ReplaceAll(decoded, url.QueryEscape(string(char)), string(char))
-	}
-	decoded = strings.ReplaceAll(decoded, url.QueryEscape("%"), "%")
-	return
 }

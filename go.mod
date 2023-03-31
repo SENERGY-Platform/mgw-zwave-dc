@@ -1,9 +1,10 @@
 module github.com/SENERGY-Platform/mgw-zwave-dc
 
-go 1.18
+go 1.20
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/SENERGY-Platform/models/go v0.0.0-20230306084304-4d1a01900e98
+	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/ory/dockertest/v3 v3.6.3
 )
 
@@ -15,7 +16,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20190827140505-75bee3e2ccb6 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/moby/term v0.0.0-20200915141129-7f0af18e79f2 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
@@ -23,6 +24,7 @@ require (
 	github.com/opencontainers/runc v1.0.0-rc9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
-	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
-	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 )

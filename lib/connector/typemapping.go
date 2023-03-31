@@ -1,14 +1,28 @@
+/*
+ * Copyright (c) 2023 InfAI (CC SES)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package connector
 
 import (
-	"errors"
-	"fmt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"strconv"
 )
 
-//result id with prefix
+// result id with prefix
 func (this *Connector) nodeToDeviceInfo(node model.DeviceInfo) (id string, info mgw.DeviceInfo, err error) {
 	id = this.nodeIdToDeviceId(node.NodeId)
 	info = mgw.DeviceInfo{
@@ -18,21 +32,7 @@ func (this *Connector) nodeToDeviceInfo(node model.DeviceInfo) (id string, info 
 	if info.Name == "" {
 		info.Name = getDefaultName(node)
 	}
-	var known bool
-
-	if this.nodeDeviceTypeOverwrite != nil {
-		info.DeviceType, known = this.nodeDeviceTypeOverwrite[strconv.FormatInt(node.NodeId, 10)]
-		if known {
-			return id, info, nil
-		}
-	}
-
-	typeMappingKey := this.getTypeMappingKey(node)
-	info.DeviceType, known = this.deviceTypeMapping[typeMappingKey]
-	if !known {
-		err = errors.New(fmt.Sprint("no known mapping for node: ", node.NodeId, " product:", node.Product, " mapping-key: ", typeMappingKey))
-		return
-	}
+	info.DeviceType, err = this.provideDeviceTypeId(node)
 	return
 }
 
