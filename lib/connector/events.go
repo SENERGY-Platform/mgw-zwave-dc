@@ -19,6 +19,7 @@ package connector
 import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"log"
+	"strconv"
 )
 
 func (this *Connector) ValueEventListener(nodeValue model.Value) {
@@ -45,4 +46,15 @@ func (this *Connector) eventShouldBeSend(id string) bool {
 	}
 	_, ok := this.deviceRegisterGet(id)
 	return ok
+}
+
+func (this *Connector) sendStatistics(node model.DeviceInfo) {
+	rawDeviceId := strconv.FormatInt(node.NodeId, 10)
+	deviceId := this.addDeviceIdPrefix(rawDeviceId)
+	err := this.mgwClient.MarshalAndSendEvent(deviceId, "statistics", node.Statistics)
+	if err != nil {
+		log.Println("ERROR: unable to send event", deviceId, "statistics", err)
+		this.mgwClient.SendClientError("unable to send event: " + err.Error())
+		return
+	}
 }

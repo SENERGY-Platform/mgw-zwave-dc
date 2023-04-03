@@ -111,6 +111,16 @@ type NodeInfo struct {
 	ProductId          int64                `json:"productId"`
 	Name               string               `json:"name"`
 	Values             map[string]NodeValue `json:"values"`
+	Statistics         Statistics           `json:"statistics"`
+}
+
+type Statistics struct {
+	CommandTx         float64 `json:"commandsTX"`
+	CommandsRX        float64 `json:"commandsRX"`
+	CommandsDroppedRX float64 `json:"commandsDroppedRX"`
+	CommandsDroppedTX float64 `json:"commandsDroppedTX"`
+	TimeoutResponse   float64 `json:"timeoutResponse"`
+	Rtt               float64 `json:"rtt"`
 }
 
 /*

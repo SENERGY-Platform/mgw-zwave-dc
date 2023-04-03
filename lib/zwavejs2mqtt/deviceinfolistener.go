@@ -55,6 +55,14 @@ func (this *Client) startNodeCommandListener() error {
 					ProductType:    strconv.FormatInt(node.ProductType, 10),
 					ProductId:      strconv.FormatInt(node.ProductId, 10),
 					Values:         transformValues(node.Values),
+					Statistics: model.Statistics{
+						CommandTx:         node.Statistics.CommandTx,
+						CommandsRX:        node.Statistics.CommandsRX,
+						CommandsDroppedRX: node.Statistics.CommandsDroppedRX,
+						CommandsDroppedTX: node.Statistics.CommandsDroppedTX,
+						TimeoutResponse:   node.Statistics.TimeoutResponse,
+						Rtt:               node.Statistics.Rtt,
+					},
 				}
 				if deviceInfo.IsValid() {
 					deviceInfos = append(deviceInfos, deviceInfo)

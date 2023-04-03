@@ -73,11 +73,36 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 	result = models.DeviceType{
 		Name:          fmt.Sprintf("ZWaveJs2Mqtt %v %v", node.Manufacturer, node.Product),
 		Description:   "",
-		Services:      nil,
 		DeviceClassId: this.config.CreateMissingDeviceTypesWithDeviceClass,
 		Attributes: []models.Attribute{
 			{Key: devicerepo.AttributeUsedForZwave, Value: "true"},
 			{Key: devicerepo.AttributeZwaveTypeMappingKey, Value: node.GetTypeMappingKey()},
+		},
+		Services: []models.Service{
+			{
+				LocalId:     "statistics",
+				Name:        "statistics",
+				Interaction: models.EVENT,
+				ProtocolId:  this.config.CreateMissingDeviceTypesWithProtocol,
+				Outputs: []models.Content{
+					{
+						ContentVariable: models.ContentVariable{
+							Name: "statistics",
+							Type: models.Structure,
+							SubContentVariables: []models.ContentVariable{
+								{Name: "commandsTX", Type: models.Float},
+								{Name: "commandsRX", Type: models.Float},
+								{Name: "commandsDroppedRX", Type: models.Float},
+								{Name: "commandsDroppedTX", Type: models.Float},
+								{Name: "timeoutResponse", Type: models.Float},
+								{Name: "rtt", Type: models.Float},
+							},
+						},
+						Serialization:     models.JSON,
+						ProtocolSegmentId: this.config.CreateMissingDeviceTypesWithProtocolSegment,
+					},
+				},
+			},
 		},
 	}
 	for _, value := range node.Values {
@@ -85,7 +110,7 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 		switch strings.ToLower(value.Type) {
 		case "number", "float", "float64", "float32", "float16", "double", "double64", "double32":
 			valueType = models.Float
-		case "int", "integer", "int64", "int32":
+		case "int", "integer", "int64", "int32", "duration":
 			valueType = models.Float
 		case "text", "string":
 			valueType = models.String
@@ -93,6 +118,7 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 			valueType = models.Boolean
 		default:
 			log.Printf("WARNING: unknown value type %v in value %v", value.Type, value.ValueId)
+			continue
 		}
 		if !value.WriteOnly {
 			result.Services = append(result.Services, models.Service{

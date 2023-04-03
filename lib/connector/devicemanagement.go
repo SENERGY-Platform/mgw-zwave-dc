@@ -70,6 +70,7 @@ func (this *Connector) DeviceInfoListener(nodes []model.DeviceInfo, huskIds []in
 				this.ValueEventListener(value)
 			}
 		}
+		this.sendStatistics(node)
 	}
 	isSetToOfflineOrDeleted := map[string]bool{}
 	if allKnownDevices {

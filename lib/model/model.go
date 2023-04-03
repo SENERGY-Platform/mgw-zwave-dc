@@ -31,6 +31,7 @@ type DeviceInfo struct {
 	ProductType    string
 	ProductId      string
 	Values         map[string]Value
+	Statistics     Statistics
 }
 
 func (this DeviceInfo) GetTypeMappingKey() string {
@@ -131,4 +132,13 @@ func DecodeLocalId(encoded string) (decoded string) {
 	}
 	decoded = strings.ReplaceAll(decoded, url.QueryEscape("%"), "%")
 	return
+}
+
+type Statistics struct {
+	CommandTx         float64 `json:"commandsTX"`
+	CommandsRX        float64 `json:"commandsRX"`
+	CommandsDroppedRX float64 `json:"commandsDroppedRX"`
+	CommandsDroppedTX float64 `json:"commandsDroppedTX"`
+	TimeoutResponse   float64 `json:"timeoutResponse"`
+	Rtt               float64 `json:"rtt"`
 }
