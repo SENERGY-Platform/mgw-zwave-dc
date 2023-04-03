@@ -69,7 +69,6 @@ type Config struct {
 	CreateMissingDeviceTypesWithProtocolSegment      string `json:"create_missing_device_types_with_protocol_segment"`
 	CreateMissingDeviceTypesLastUpdateFunction       string `json:"create_missing_device_types_last_update_function"`
 	CreateMissingDeviceTypesLastUpdateCharacteristic string `json:"create_missing_device_types_last_update_characteristic"`
-	DisownCreatedDeviceTypes                         bool   `json:"disown_created_device_types"`
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

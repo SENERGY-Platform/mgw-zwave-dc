@@ -37,8 +37,6 @@
     "create_missing_device_types_with_protocol_segment": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65",
     "create_missing_device_types_last_update_function": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
     "create_missing_device_types_last_update_characteristic": "urn:infai:ses:characteristic:64691f8d-4909-470f-a1fa-e977ebe28684",
-    "disown_created_device_types": false,
-
 
     "device_type_mapping": {
         "ManufacturerId.ProductType.ProductId": "example-device-type-id",

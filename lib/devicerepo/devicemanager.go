@@ -42,11 +42,7 @@ func (this *DeviceRepo) CreateDeviceType(key string, dt models.DeviceType) (resu
 	if err != nil {
 		return result, 500, err
 	}
-	disowned := ""
-	if this.config.DisownCreatedDeviceTypes {
-		disowned = "?disowned=true"
-	}
-	req, err := http.NewRequest(http.MethodPost, this.config.DeviceManagerUrl+"/device-types"+disowned, buf)
+	req, err := http.NewRequest(http.MethodPost, this.config.DeviceManagerUrl+"/device-types", buf)
 	if err != nil {
 		return result, 500, err
 	}
