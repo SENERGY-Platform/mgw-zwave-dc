@@ -65,13 +65,13 @@ func (this *Connector) provideDeviceTypeId(node model.DeviceInfo) (result string
 }
 
 func (this *Connector) createDeviceType(node model.DeviceInfo) (string, error) {
-	dt, _, err := this.devicerepo.CreateDeviceType(node.GetTypeMappingKey(), this.nodeToDeviceType(node))
+	dt, _, err := this.devicerepo.CreateDeviceTypeWithDistinctAttributes(node.GetTypeMappingKey(), this.nodeToDeviceType(node), []string{devicerepo.AttributeUsedForZwave, devicerepo.AttributeZwaveTypeMappingKey})
 	return dt.Id, err
 }
 
 func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.DeviceType) {
 	result = models.DeviceType{
-		Name:          fmt.Sprintf("ZWaveJs2Mqtt %v %v", node.Manufacturer, node.Product),
+		Name:          fmt.Sprintf("zwavejs2mqtt %v %v", node.Manufacturer, node.Product),
 		Description:   "",
 		DeviceClassId: this.config.CreateMissingDeviceTypesWithDeviceClass,
 		Attributes: []models.Attribute{
