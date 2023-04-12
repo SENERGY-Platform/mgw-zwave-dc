@@ -71,7 +71,7 @@ func (this *Connector) createDeviceType(node model.DeviceInfo) (string, error) {
 
 func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.DeviceType) {
 	result = models.DeviceType{
-		Name:          fmt.Sprintf("zwavejs2mqtt %v %v", node.Manufacturer, node.Product),
+		Name:          fmt.Sprintf("UNFINISHED zwavejs2mqtt %v %v", node.Manufacturer, node.Product),
 		Description:   "",
 		DeviceClassId: this.config.CreateMissingDeviceTypesWithDeviceClass,
 		Attributes: []models.Attribute{
@@ -110,12 +110,21 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 		switch strings.ToLower(value.Type) {
 		case "number", "float", "float64", "float32", "float16", "double", "double64", "double32":
 			valueType = models.Float
-		case "int", "integer", "int64", "int32", "duration":
+		case "int", "integer", "int64", "int32":
 			valueType = models.Float
 		case "text", "string":
 			valueType = models.String
 		case "bool", "boolean", "binary":
 			valueType = models.Boolean
+		case "color":
+			if strings.HasSuffix(value.GetServiceId(false), "hexColor") {
+				valueType = models.String
+			} else {
+				log.Printf("WARNING: unknown value type %v in value %v", value.Type, value.ValueId)
+				continue
+			}
+		case "duration":
+			continue
 		default:
 			log.Printf("WARNING: unknown value type %v in value %v", value.Type, value.ValueId)
 			continue
@@ -123,7 +132,8 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 		if !value.WriteOnly {
 			result.Services = append(result.Services, models.Service{
 				LocalId:     value.GetServiceId(true),
-				Name:        value.Label,
+				Name:        getServiceName(value, true),
+				Description: value.Description,
 				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  this.config.CreateMissingDeviceTypesWithProtocol,
 				Outputs: []models.Content{{
@@ -162,7 +172,8 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 		if !value.ReadOnly {
 			result.Services = append(result.Services, models.Service{
 				LocalId:     value.GetServiceId(false),
-				Name:        value.Label,
+				Name:        getServiceName(value, false),
+				Description: value.Description,
 				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  this.config.CreateMissingDeviceTypesWithProtocol,
 				Inputs: []models.Content{{
@@ -176,5 +187,22 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 			})
 		}
 	}
+	/*
+		sort.Slice(result.Services, func(i, j int) bool {
+			return result.Services[i].Name < result.Services[j].Name
+		})
+	*/
 	return result
+}
+
+func getServiceName(value model.Value, get bool) string {
+	parts := []string{}
+	if get {
+		parts = append(parts, "Get")
+	}
+	if value.CommandClassName != "" {
+		parts = append(parts, value.CommandClassName)
+	}
+	parts = append(parts, value.Label)
+	return strings.Join(parts, " ")
 }

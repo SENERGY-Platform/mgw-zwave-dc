@@ -1,3 +1,4 @@
 .idea
 lib/tests/resources/config.json
 mgw-zwave-dc
+docker-compose

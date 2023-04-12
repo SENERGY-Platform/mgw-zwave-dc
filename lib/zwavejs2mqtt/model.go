@@ -147,17 +147,19 @@ Values ids unique strings have changed, in Z2M valueIds were identified by <node
 */
 
 type NodeValue struct {
-	Id           string      `json:"id"`
-	NodeId       int64       `json:"nodeId"`
-	CommandClass int64       `json:"commandClass"`
-	Endpoint     int64       `json:"endpoint"`
-	Type         string      `json:"type"`
-	Label        string      `json:"label"`
-	Readable     bool        `json:"readable"`
-	Writeable    bool        `json:"writeable"`
-	Values       interface{} `json:"values"`
-	Value        interface{} `json:"value"`
-	LastUpdate   int64       `json:"lastUpdate"`
+	Id               string      `json:"id"`
+	NodeId           int64       `json:"nodeId"`
+	CommandClass     int64       `json:"commandClass"`
+	CommandClassName string      `json:"commandClassName"`
+	Description      string      `json:"description"`
+	Endpoint         int64       `json:"endpoint"`
+	Type             string      `json:"type"`
+	Label            string      `json:"label"`
+	Readable         bool        `json:"readable"`
+	Writeable        bool        `json:"writeable"`
+	Values           interface{} `json:"values"`
+	Value            interface{} `json:"value"`
+	LastUpdate       int64       `json:"lastUpdate"`
 }
 
 func transformValues(values map[string]NodeValue) (result map[string]model.Value) {
@@ -193,6 +195,8 @@ func transformValue(value NodeValue) (result model.Value) {
 		NodeId:            value.NodeId,
 		ClassId:           value.CommandClass,
 		Type:              value.Type,
+		CommandClassName:  value.CommandClassName,
+		Description:       value.Description,
 		Instance:          value.Endpoint,
 		Label:             value.Label,
 		ReadOnly:          !value.Writeable,

@@ -83,10 +83,12 @@ func (this DeviceInfo) IsHusk() bool {
 }
 
 type Value struct {
+	Description       string      `json:"description"`
 	ComputedServiceId string      `json:"computedServiceId"`
 	ValueId           string      `json:"value_id"`
 	NodeId            int64       `json:"node_id"`
 	ClassId           int64       `json:"class_id"`
+	CommandClassName  string      `json:"commandClassName"`
 	Type              string      `json:"type"`
 	Instance          int64       `json:"instance"`
 	Index             int64       `json:"index"`
