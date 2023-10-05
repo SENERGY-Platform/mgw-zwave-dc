@@ -31,12 +31,12 @@ type Config struct {
 	ConnectorId                  string            `json:"connector_id"`
 	DeviceIdPrefix               string            `json:"device_id_prefix"`
 	ZwaveMqttBroker              string            `json:"zwave_mqtt_broker"`
-	ZwaveMqttUser                string            `json:"zwave_mqtt_user"`
-	ZwaveMqttPw                  string            `json:"zwave_mqtt_pw"`
+	ZwaveMqttUser                string            `json:"zwave_mqtt_user" config:"secret"`
+	ZwaveMqttPw                  string            `json:"zwave_mqtt_pw" config:"secret"`
 	ZwaveMqttClientId            string            `json:"zwave_mqtt_client_id"`
 	MgwMqttBroker                string            `json:"mgw_mqtt_broker"`
-	MgwMqttUser                  string            `json:"mgw_mqtt_user"`
-	MgwMqttPw                    string            `json:"mgw_mqtt_pw"`
+	MgwMqttUser                  string            `json:"mgw_mqtt_user" config:"secret"`
+	MgwMqttPw                    string            `json:"mgw_mqtt_pw" config:"secret"`
 	MgwMqttClientId              string            `json:"mgw_mqtt_client_id"`
 	ZwaveController              string            `json:"zwave_controller"`
 	ZwaveMqttDeviceStateTopic    string            `json:"zwave_mqtt_device_state_topic"`
@@ -52,10 +52,10 @@ type Config struct {
 	NodeDeviceTypeOverwrite      map[string]string `json:"node_device_type_overwrite"`
 
 	AuthEndpoint             string  `json:"auth_endpoint"`
-	AuthClientId             string  `json:"auth_client_id"`
+	AuthClientId             string  `json:"auth_client_id" config:"secret"`
 	AuthExpirationTimeBuffer float64 `json:"auth_expiration_time_buffer"`
-	AuthUsername             string  `json:"auth_username"`
-	AuthPassword             string  `json:"auth_password"`
+	AuthUsername             string  `json:"auth_username" config:"secret"`
+	AuthPassword             string  `json:"auth_password" config:"secret"`
 
 	DeviceManagerUrl     string `json:"device_manager_url"`
 	PermissionsSearchUrl string `json:"permissions_search_url"`
@@ -109,10 +109,15 @@ func handleEnvironmentVars(config *Config) {
 	configType := configValue.Type()
 	for index := 0; index < configType.NumField(); index++ {
 		fieldName := configType.Field(index).Name
+		fieldConfig := configType.Field(index).Tag.Get("config")
 		envName := fieldNameToEnvName(fieldName)
 		envValue := os.Getenv(envName)
 		if envValue != "" {
-			fmt.Println("use environment variable: ", envName, " = ", envValue)
+			loggedEnvValue := envValue
+			if strings.Contains(fieldConfig, "secret") {
+				loggedEnvValue = "***"
+			}
+			fmt.Println("use environment variable: ", envName, " = ", loggedEnvValue)
 			if configValue.FieldByName(fieldName).Kind() == reflect.Int64 {
 				i, _ := strconv.ParseInt(envValue, 10, 64)
 				configValue.FieldByName(fieldName).SetInt(i)
