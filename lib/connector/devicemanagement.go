@@ -17,7 +17,7 @@
 package connector
 
 import (
-	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"log"
@@ -40,7 +40,7 @@ func (this *Connector) SetDeviceState(nodeId int64, online bool) error {
 	deviceId := this.nodeIdToDeviceId(nodeId)
 	info, ok := this.deviceRegisterGet(deviceId)
 	if !ok {
-		return errors.New("unknown device")
+		return fmt.Errorf("unknown device %v", nodeId)
 	}
 	info.State = mgw.Offline
 	if online {

@@ -33,34 +33,14 @@ func (this *Client) startDeviceStateListener() error {
 	log.Println("subscribe:", this.deviceStateTopic)
 	token := this.mqtt.Subscribe(this.deviceStateTopic, 2, func(client paho.Client, message paho.Message) {
 		this.handleDeviceStateMessage(message.Topic(), message.Payload())
-		this.handleValueEventMessage(message.Topic(), message.Payload())
 	})
 	if token.Wait() && token.Error() != nil {
 		log.Println("Error on Subscribe: ", this.deviceStateTopic, token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
+
 	return nil
-}
-
-func (this *Client) handleValueEventMessage(topic string, payload []byte) {
-	if this.valueEventListener != nil {
-		value := NodeValue{}
-		err := json.Unmarshal(payload, &value)
-		if err != nil || !validValueEvent(value) {
-			//is not value event
-			return
-		}
-		this.valueEventListener(transformValue(value))
-	}
-}
-
-func validValueEvent(value NodeValue) bool {
-	return value.Id != "" &&
-		value.Value != nil &&
-		value.NodeId != 0 &&
-		value.NodeId != 1 &&
-		value.LastUpdate != 0
 }
 
 type DeviceState = string

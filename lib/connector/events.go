@@ -37,6 +37,8 @@ func (this *Connector) ValueEventListener(nodeValue model.Value) {
 			this.mgwClient.SendClientError("unable to send event: " + err.Error())
 			return
 		}
+	} else if this.config.Debug {
+		log.Printf("DEBUG: ignore event for %v because the device is not registered\n", deviceId)
 	}
 }
 
