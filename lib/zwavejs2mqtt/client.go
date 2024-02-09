@@ -43,7 +43,6 @@ type Client struct {
 	apiTopic            string
 	networkEventsTopic  string
 	deviceStateTopic    string
-	valueEventTopic     string
 	deviceInfoListener  DeviceInfoListener
 	valueEventListener  ValueEventListener
 	deviceStateListener DeviceStateListener
@@ -54,7 +53,6 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 	log.Println("start zwavejs2mqtt client")
 	client := &Client{
 		deviceStateTopic:   config.ZwaveMqttDeviceStateTopic,
-		valueEventTopic:    config.ZvaveValueEventTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
 		networkEventsTopic: config.ZwaveNetworkEventsTopic,
 		debug:              config.Debug,
@@ -125,10 +123,6 @@ func (this *Client) startDefaultListener() error {
 		return err
 	}
 	err = this.startDeviceStateListener()
-	if err != nil {
-		return err
-	}
-	err = this.startValueEventListener()
 	if err != nil {
 		return err
 	}
