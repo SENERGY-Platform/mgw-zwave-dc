@@ -19,12 +19,12 @@ package configuration
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -44,6 +44,7 @@ type Config struct {
 	ZwaveMqttApiTopic            string            `json:"zwave_mqtt_api_topic"`
 	ZwaveNetworkEventsTopic      string            `json:"zwave_network_events_topic"`
 	UpdatePeriod                 string            `json:"update_period"`
+	InitialUpdateRequestDelay    Duration          `json:"initial_update_request_delay"`
 	Debug                        bool              `json:"debug"`
 	DeviceTypeMapping            map[string]string `json:"device_type_mapping"`
 	DeleteMissingDevices         bool              `json:"delete_missing_devices"`
@@ -73,19 +74,16 @@ type Config struct {
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
 func Load(location string) (config Config, err error) {
-	file, error := os.Open(location)
-	if error != nil {
-		log.Println("error on config load: ", error)
-		return config, error
+	file, err := os.Open(location)
+	if err != nil {
+		return config, err
 	}
-	decoder := json.NewDecoder(file)
-	error = decoder.Decode(&config)
-	if error != nil {
-		log.Println("invalid config json: ", error)
-		return config, error
+	err = json.NewDecoder(file).Decode(&config)
+	if err != nil {
+		return config, err
 	}
-	handleEnvironmentVars(&config)
-	return config, nil
+	err = handleEnvironmentVars(&config, os.Getenv)
+	return config, err
 }
 
 var camel = regexp.MustCompile("(^[^A-Z]*|[A-Z]*)([A-Z][^A-Z]+|$)")
@@ -104,33 +102,56 @@ func fieldNameToEnvName(s string) string {
 }
 
 // preparations for docker
-func handleEnvironmentVars(config *Config) {
+func handleEnvironmentVars(config *Config, getEnv func(key string) string) (err error) {
 	configValue := reflect.Indirect(reflect.ValueOf(config))
 	configType := configValue.Type()
 	for index := 0; index < configType.NumField(); index++ {
 		fieldName := configType.Field(index).Name
 		fieldConfig := configType.Field(index).Tag.Get("config")
 		envName := fieldNameToEnvName(fieldName)
-		envValue := os.Getenv(envName)
+		envValue := getEnv(envName)
 		if envValue != "" {
 			loggedEnvValue := envValue
 			if strings.Contains(fieldConfig, "secret") {
 				loggedEnvValue = "***"
 			}
 			fmt.Println("use environment variable: ", envName, " = ", loggedEnvValue)
-			if configValue.FieldByName(fieldName).Kind() == reflect.Int64 {
-				i, _ := strconv.ParseInt(envValue, 10, 64)
+			if field := configValue.FieldByName(fieldName); field.Kind() == reflect.Struct && field.CanInterface() {
+				fieldPtrInterface := field.Addr().Interface()
+				setter, setterOk := fieldPtrInterface.(interface{ SetString(string) })
+				errSetter, errSetterOk := fieldPtrInterface.(interface{ SetString(string) error })
+				if setterOk {
+					setter.SetString(envValue)
+				}
+				if errSetterOk {
+					err = errSetter.SetString(envValue)
+					if err != nil {
+						return fmt.Errorf("invalid env variable %v=%v: %w", envName, envValue, err)
+					}
+				}
+			}
+			if configValue.FieldByName(fieldName).Kind() == reflect.Int64 || configValue.FieldByName(fieldName).Kind() == reflect.Int {
+				i, err := strconv.ParseInt(envValue, 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid env variable %v=%v: %w", envName, envValue, err)
+				}
 				configValue.FieldByName(fieldName).SetInt(i)
 			}
 			if configValue.FieldByName(fieldName).Kind() == reflect.String {
 				configValue.FieldByName(fieldName).SetString(envValue)
 			}
 			if configValue.FieldByName(fieldName).Kind() == reflect.Bool {
-				b, _ := strconv.ParseBool(envValue)
+				b, err := strconv.ParseBool(envValue)
+				if err != nil {
+					return fmt.Errorf("invalid env variable %v=%v: %w", envName, envValue, err)
+				}
 				configValue.FieldByName(fieldName).SetBool(b)
 			}
 			if configValue.FieldByName(fieldName).Kind() == reflect.Float64 {
-				f, _ := strconv.ParseFloat(envValue, 64)
+				f, err := strconv.ParseFloat(envValue, 64)
+				if err != nil {
+					return fmt.Errorf("invalid env variable %v=%v: %w", envName, envValue, err)
+				}
 				configValue.FieldByName(fieldName).SetFloat(f)
 			}
 			if configValue.FieldByName(fieldName).Kind() == reflect.Slice {
@@ -152,4 +173,38 @@ func handleEnvironmentVars(config *Config) {
 			}
 		}
 	}
+	return nil
+}
+
+type Duration struct {
+	dur time.Duration
+}
+
+func (this *Duration) GetDuration() time.Duration {
+	return this.dur
+}
+
+func (this *Duration) SetDuration(dur time.Duration) {
+	this.dur = dur
+}
+
+func (this *Duration) SetString(str string) error {
+	if str == "" {
+		return nil
+	}
+	duration, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	this.SetDuration(duration)
+	return nil
+}
+
+func (this *Duration) UnmarshalJSON(bytes []byte) (err error) {
+	var str string
+	err = json.Unmarshal(bytes, &str)
+	if err != nil {
+		return err
+	}
+	return this.SetString(str)
 }

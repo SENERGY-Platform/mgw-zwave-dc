@@ -18,6 +18,7 @@ package connector
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo"
@@ -137,6 +138,24 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 
 	log.Println("initial update request", result.z2mClient.RequestDeviceInfoUpdate())
 
+	go func() {
+		timer := time.NewTimer(config.InitialUpdateRequestDelay.GetDuration())
+		defer func() {
+			if !timer.Stop() {
+				select {
+				case <-timer.C:
+				default:
+				}
+			}
+		}()
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+			log.Println("delayed initial update request", result.z2mClient.RequestDeviceInfoUpdate())
+		}
+	}()
+
 	return result, nil
 }
 
@@ -171,4 +190,37 @@ func (this *Connector) addDeviceIdPrefix(rawDeviceId string) string {
 
 func (this *Connector) removeDeviceIdPrefix(deviceId string) string {
 	return strings.Replace(deviceId, this.deviceIdPrefix+":", "", 1)
+}
+
+type Duration struct {
+	dur time.Duration
+}
+
+func (this *Duration) GetDuration() time.Duration {
+	return this.dur
+}
+
+func (this *Duration) SetDuration(dur time.Duration) {
+	this.dur = dur
+}
+
+func (this *Duration) SetString(str string) error {
+	if str == "" {
+		return nil
+	}
+	duration, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	this.SetDuration(duration)
+	return nil
+}
+
+func (this *Duration) UnmarshalJSON(bytes []byte) (err error) {
+	var str string
+	err = json.Unmarshal(bytes, &str)
+	if err != nil {
+		return err
+	}
+	return this.SetString(str)
 }
