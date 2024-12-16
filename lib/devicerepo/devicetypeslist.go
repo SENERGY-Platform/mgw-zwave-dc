@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"time"
@@ -76,24 +77,12 @@ func (this *DeviceRepo) getDeviceTypeListFromPermissionSearch() (result []models
 	if err != nil {
 		return result, err
 	}
-	err, _ = PermissionSearch(token, this.config.PermissionsSearchUrl, QueryMessage{
-		Resource: "device-types",
-		Find: &QueryFind{
-			QueryListCommons: QueryListCommons{
-				Limit:  9999,
-				Offset: 0,
-				Rights: "r",
-				SortBy: "name",
-			},
-			Filter: &Selection{
-				Condition: &ConditionConfig{
-					Feature:   "features.attributes.key",
-					Operation: QueryEqualOperation,
-					Value:     AttributeUsedForZwave,
-				},
-			},
-		},
-	}, &result)
+	result, _, err, _ = client.NewClient(this.config.DeviceRepositoryUrl).ListDeviceTypesV3(token, client.DeviceTypeListOptions{
+		Limit:         9999,
+		Offset:        0,
+		SortBy:        "name.asc",
+		AttributeKeys: []string{AttributeUsedForZwave},
+	})
 	if err != nil {
 		return result, err
 	}
