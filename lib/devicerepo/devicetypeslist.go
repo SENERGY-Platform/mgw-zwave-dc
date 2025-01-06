@@ -49,7 +49,7 @@ func (this *DeviceRepo) getLastDtRefreshUsedFallback() bool {
 func (this *DeviceRepo) refreshDeviceTypeList() error {
 	this.dtMux.Lock()
 	defer this.dtMux.Unlock()
-	result, err := this.getDeviceTypeListFromPermissionSearch()
+	result, err := this.getDeviceTypeListFromDeviceRepository()
 	if err == nil {
 		this.deviceTypes = result
 		this.lastDtRefresh = time.Now()
@@ -72,12 +72,12 @@ func (this *DeviceRepo) refreshDeviceTypeList() error {
 	}
 }
 
-func (this *DeviceRepo) getDeviceTypeListFromPermissionSearch() (result []models.DeviceType, err error) {
+func (this *DeviceRepo) getDeviceTypeListFromDeviceRepository() (result []models.DeviceType, err error) {
 	token, err := this.getToken()
 	if err != nil {
 		return result, err
 	}
-	result, _, err, _ = client.NewClient(this.config.DeviceRepositoryUrl).ListDeviceTypesV3(token, client.DeviceTypeListOptions{
+	result, _, err, _ = client.NewClient(this.config.DeviceRepositoryUrl, nil).ListDeviceTypesV3(token, client.DeviceTypeListOptions{
 		Limit:         9999,
 		Offset:        0,
 		SortBy:        "name.asc",
