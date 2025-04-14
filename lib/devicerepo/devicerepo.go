@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo/fallback"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -99,11 +100,11 @@ const AttributeZwaveTypeMappingKey = "senergy/zwave-type-mapping-key"
 func (this *DeviceRepo) getMatchingDeviceType(devicetypes []models.DeviceType, device model.DeviceInfo) (models.DeviceType, bool) {
 	deviceTypeKey := device.GetTypeMappingKey()
 	for _, dt := range devicetypes {
-		attrMap := map[string]string{}
+		attrMap := map[string][]string{}
 		for _, attr := range dt.Attributes {
-			attrMap[attr.Key] = attr.Value
+			attrMap[attr.Key] = append(attrMap[attr.Key], strings.TrimSpace(attr.Value))
 		}
-		if key, keyIsSet := attrMap[AttributeZwaveTypeMappingKey]; keyIsSet && strings.TrimSpace(key) == strings.TrimSpace(deviceTypeKey) {
+		if keys, keyIsSet := attrMap[AttributeZwaveTypeMappingKey]; keyIsSet && slices.Contains(keys, strings.TrimSpace(deviceTypeKey)) {
 			return dt, true
 		}
 	}
