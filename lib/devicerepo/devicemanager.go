@@ -48,11 +48,13 @@ func (this *DeviceRepo) CreateDeviceTypeWithDistinctAttributes(key string, dt mo
 	if err != nil {
 		return result, 500, err
 	}
-	token, err := this.getToken()
-	if err != nil {
-		return result, 500, err
+	if this.config.AuthEnabled() {
+		token, err := this.getToken()
+		if err != nil {
+			return result, 500, err
+		}
+		req.Header.Set("Authorization", token)
 	}
-	req.Header.Set("Authorization", token)
 	result, code, err = Do[models.DeviceType](req)
 	if err != nil {
 		return result, code, err

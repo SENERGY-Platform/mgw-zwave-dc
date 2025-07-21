@@ -72,6 +72,10 @@ type Config struct {
 	CreateMissingDeviceTypesLastUpdateCharacteristic string `json:"create_missing_device_types_last_update_characteristic"`
 }
 
+func (this Config) AuthEnabled() bool {
+	return this.AuthEndpoint != "" && this.AuthEndpoint != "-"
+}
+
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
 func Load(location string) (config Config, err error) {
 	file, err := os.Open(location)

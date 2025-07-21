@@ -69,6 +69,9 @@ func New(config configuration.Config, auth Auth) (*DeviceRepo, error) {
 }
 
 func (this *DeviceRepo) getToken() (string, error) {
+	if !this.config.AuthEnabled() {
+		return "", nil
+	}
 	return this.auth.EnsureAccess(this.config)
 }
 
