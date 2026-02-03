@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (this *DeviceRepo) CreateDeviceTypeWithDistinctAttributes(key string, dt models.DeviceType, attributeKeys []string) (result models.DeviceType, code int, err error) {
@@ -44,7 +45,7 @@ func (this *DeviceRepo) CreateDeviceTypeWithDistinctAttributes(key string, dt mo
 	if err != nil {
 		return result, 500, err
 	}
-	req, err := http.NewRequest(http.MethodPost, this.config.DeviceManagerUrl+"/device-types?distinct_attributes="+url.QueryEscape(strings.Join(attributeKeys, ",")), buf)
+	req, err := http.NewRequest(http.MethodPost, this.config.DeviceRepositoryUrl+"/device-types?distinct_attributes="+url.QueryEscape(strings.Join(attributeKeys, ",")), buf)
 	if err != nil {
 		return result, 500, err
 	}

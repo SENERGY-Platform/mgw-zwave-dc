@@ -28,7 +28,6 @@
     "auth_password": "",
     "fallback_file": "devicerepo_fallback.json",
     "device_repository_url": "https://api.senergy.infai.org/device-repository",
-    "device_manager_url": "https://api.senergy.infai.org/device-manager",
     "min_cache_duration": "1m",
     "max_cache_duration": "1h",
 
