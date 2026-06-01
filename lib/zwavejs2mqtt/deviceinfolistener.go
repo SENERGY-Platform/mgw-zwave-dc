@@ -19,27 +19,27 @@ package zwavejs2mqtt
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	paho "github.com/eclipse/paho.mqtt.golang"
-	"log"
-	"strconv"
 )
 
 func (this *Client) startNodeCommandListener() error {
 	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
+		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
-	log.Println("subscribe:", this.apiTopic+GetNodesCommandTopic)
+	slog.Info("subscribe", "topic", this.apiTopic+GetNodesCommandTopic)
 	token := this.mqtt.Subscribe(this.apiTopic+GetNodesCommandTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.deviceInfoListener != nil {
-			if this.debug {
-				log.Println("getNodes response: \n", string(message.Payload()))
-			}
+			slog.Debug("getNodes response", "topic", message.Topic(), "payload", string(message.Payload()))
 			wrapper := NodeInfoResultWrapper{}
 			err := json.Unmarshal(message.Payload(), &wrapper)
 			if err != nil {
-				log.Println("ERROR: unable to unmarshal getNodes wrapper", err)
+				slog.Error("unable to unmarshal getNodes wrapper", "error", err)
 				this.ForwardError("unable to unmarshal getNodes wrapper: " + err.Error())
 				return
 			}
@@ -68,15 +68,15 @@ func (this *Client) startNodeCommandListener() error {
 					deviceInfos = append(deviceInfos, deviceInfo)
 				} else if deviceInfo.IsHusk() {
 					huskIds = append(huskIds, deviceInfo.NodeId)
-				} else if this.debug {
-					log.Println("IGNORE:", deviceInfo)
+				} else {
+					slog.Debug("IGNORE", "deviceInfo", fmt.Sprintf("%#v", deviceInfo))
 				}
 			}
 			this.deviceInfoListener(deviceInfos, huskIds, true, true)
 		}
 	})
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		slog.Error("Error on Subscribe", "topic", this.apiTopic+GetNodesCommandTopic, "error", token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
@@ -85,24 +85,22 @@ func (this *Client) startNodeCommandListener() error {
 
 func (this *Client) startNodeEventListener() error {
 	if this.networkEventsTopic == "" || this.networkEventsTopic == "-" {
-		log.Println("WARNING: no zwave network event topic configured --> no live device availability check")
+		slog.Warn("no zwave network event topic configured --> no live device availability check")
 		return nil
 	}
 	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
+		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 
-	log.Println("subscribe:", this.networkEventsTopic+NodeAvailableTopic)
+	slog.Info("subscribe", "topic", this.networkEventsTopic+NodeAvailableTopic)
 	token := this.mqtt.Subscribe(this.networkEventsTopic+NodeAvailableTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.deviceInfoListener != nil {
-			if this.debug {
-				log.Println("node available event: \n", string(message.Payload()))
-			}
+			slog.Debug("node available event", "topic", message.Topic(), "payload", string(message.Payload()))
 			wrapper := NodeAvailableMessage{}
 			err := json.Unmarshal(message.Payload(), &wrapper)
 			if err != nil {
-				log.Println("ERROR: unable to unmarshal getNodes result", err)
+				slog.Error("ERROR: unable to unmarshal getNodes result", "error", err)
 				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
 				return
 			}
@@ -120,8 +118,8 @@ func (this *Client) startNodeEventListener() error {
 					}
 					if deviceInfo.IsValid() {
 						this.deviceInfoListener([]model.DeviceInfo{deviceInfo}, []int64{}, false, false)
-					} else if this.debug {
-						log.Println("IGNORE:", deviceInfo)
+					} else {
+						slog.Debug("IGNORE", "deviceInfo", fmt.Sprintf("%#v", deviceInfo))
 					}
 				}
 			}
@@ -129,7 +127,7 @@ func (this *Client) startNodeEventListener() error {
 		}
 	})
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		slog.Error("Error on Subscribe", "topic", this.networkEventsTopic+NodeAvailableTopic, "error", token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}

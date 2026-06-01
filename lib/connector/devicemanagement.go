@@ -18,16 +18,16 @@ package connector
 
 import (
 	"fmt"
+	"runtime/debug"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
-	"log"
-	"runtime/debug"
 )
 
 func (this *Connector) NotifyRefresh() {
 	err := this.z2mClient.RequestDeviceInfoUpdate()
 	if err != nil {
-		log.Println("ERROR:", err)
+		this.config.GetLogger().Error("unable to request device info update", "error", err)
 		this.mgwClient.SendClientError(err.Error())
 		debug.PrintStack()
 	}
@@ -55,12 +55,12 @@ func (this *Connector) DeviceInfoListener(nodes []model.DeviceInfo, huskIds []in
 	for _, node := range nodes {
 		id, info, err := this.nodeToDeviceInfo(node)
 		if err != nil {
-			log.Println("WARNING: unable to create device info for node", err)
+			this.config.GetLogger().Error("unable to create device info for node", "error", err)
 			continue
 		}
 		err = this.registerDevice(id, info)
 		if err != nil {
-			log.Println("ERROR: unable to register device", err)
+			this.config.GetLogger().Error("unable to register device", "error", err)
 			this.mgwClient.SendClientError("unable to register device: " + err.Error())
 			return
 		}
@@ -84,12 +84,12 @@ func (this *Connector) DeviceInfoListener(nodes []model.DeviceInfo, huskIds []in
 func (this *Connector) registerDevice(id string, info mgw.DeviceInfo) (err error) {
 	err = this.mgwClient.SetDevice(id, info)
 	if err != nil {
-		log.Println("ERROR: unable to send device info to mgw", err)
+		this.config.GetLogger().Error("unable to send device info to mgw", "error", err)
 		return err
 	}
 	err = this.mgwClient.ListenToDeviceCommands(id, this.CommandHandler)
 	if err != nil {
-		log.Println("ERROR: unable to subscribe to device commands", err)
+		this.config.GetLogger().Error("unable to subscribe to device commands", "error", err)
 		return err
 	}
 	this.deviceRegisterSet(id, info)
@@ -141,18 +141,18 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 		if !found {
 			info.State = mgw.Offline
 			if this.deleteMissingDevices {
-				log.Println("WARNING: remove missing device:", id)
+				this.config.GetLogger().Warn("remove missing device", "id", id)
 				err := this.mgwClient.RemoveDevice(id)
 				if err != nil {
-					log.Println("ERROR: unable to send device info (delete) to mgw", err)
+					this.config.GetLogger().Error("unable to send device info (delete) to mgw", "error", err)
 					this.mgwClient.SendClientError("unable to send device info (delete) to mgw: " + err.Error())
 					return
 				}
 			} else {
-				log.Println("WARNING: set missing device offline:", id)
+				this.config.GetLogger().Warn("set missing device offline", "id", id)
 				err := this.mgwClient.SetDevice(id, info)
 				if err != nil {
-					log.Println("ERROR: unable to send device info (offline) to mgw", err)
+					this.config.GetLogger().Error("unable to send device info (offline) to mgw", "error", err)
 					this.mgwClient.SendClientError("unable to send device info (offline) to mgw: " + err.Error())
 					return
 				}
@@ -160,7 +160,7 @@ func (this *Connector) unregisterMissingDevices(infos map[string]mgw.DeviceInfo)
 
 			err := this.mgwClient.StopListenToDeviceCommands(id)
 			if err != nil {
-				log.Println("WARNING: unable to stop listening to device commands", err)
+				this.config.GetLogger().Warn("unable to stop listening to device commands", "error", err)
 				this.mgwClient.SendClientError("unable to stop listening to device commands: " + err.Error())
 			}
 			this.deviceRegisterRemove(id)
@@ -176,7 +176,7 @@ func (this *Connector) sendDeleteForHusks(huskIds []int64, alreadyHandled map[st
 		if !alreadyHandled[deviceId] {
 			err := this.mgwClient.RemoveDevice(deviceId)
 			if err != nil {
-				log.Println("ERROR: unable to delete husk in mgw", err)
+				this.config.GetLogger().Error("unable to delete husk in mgw", "error", err)
 				return
 			}
 		}

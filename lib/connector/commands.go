@@ -18,9 +18,9 @@ package connector
 
 import (
 	"encoding/json"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/mgw"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
-	"log"
 )
 
 // expects ids from mgw (with prefixes and suffixes)
@@ -38,19 +38,19 @@ func (this *Connector) handleGetCommand(deviceId string, serviceId string, comma
 	if known {
 		temp, err := json.Marshal(value)
 		if err != nil {
-			log.Println("ERROR: unable to marshal saved value to send as response", deviceId, serviceId, err)
+			this.config.GetLogger().Error("unable to marshal saved value to send as response", "device", deviceId, "service", serviceId, "value", value, "error", err)
 			this.mgwClient.SendCommandError(command.CommandId, "unable to marshal saved value to send as response: "+err.Error())
 			return
 		}
 		command.Data = string(temp)
 		err = this.mgwClient.Respond(deviceId, serviceId, command)
 		if err != nil {
-			log.Println("ERROR: unable to send response to mgw", err)
+			this.config.GetLogger().Error("unable to send response to mgw", "device", deviceId, "service", serviceId, "error", err)
 			this.mgwClient.SendCommandError(command.CommandId, "unable to send response to mgw: "+err.Error())
 			return
 		}
 	} else {
-		log.Println("WARNING: no value saved to send as response", deviceId, serviceId)
+		this.config.GetLogger().Warn("no value saved to send as response", "device", deviceId, "service", serviceId)
 		this.mgwClient.SendCommandError(command.CommandId, "no value saved to send as response")
 		return
 	}
@@ -62,20 +62,20 @@ func (this *Connector) handleSetCommand(deviceId string, serviceId string, comma
 	var value interface{}
 	err := json.Unmarshal([]byte(command.Data), &value)
 	if err != nil {
-		log.Println("ERROR: unable to Unmarshal command data to z2m value\n    ", err)
+		this.config.GetLogger().Error("unable to Unmarshal command data to z2m value", "device", deviceId, "service", serviceId, "value", command.Data, "error", err)
 		this.mgwClient.SendCommandError(command.CommandId, "unable to Unmarshal command data to z2m value: "+err.Error())
 		return
 	}
 	err = this.z2mClient.SetValueByValueId(valueId, value)
 	if err != nil {
-		log.Println("ERROR: unable to send value to z2m\n    ", err)
+		this.config.GetLogger().Error("unable to send value to z2m", "device", deviceId, "service", serviceId, "value", value, "error", err)
 		this.mgwClient.SendCommandError(command.CommandId, "unable to send value to z2m: "+err.Error())
 		return
 	}
 	command.Data = ""
 	err = this.mgwClient.Respond(deviceId, serviceId, command)
 	if err != nil {
-		log.Println("ERROR: unable to send response to mgw", err)
+		this.config.GetLogger().Error("unable to send response to mgw", "device", deviceId, "service", serviceId, "error", err)
 		this.mgwClient.SendCommandError(command.CommandId, "unable to send response to mgw: "+err.Error())
 		return
 	}

@@ -20,13 +20,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
-	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
+	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
 type DeviceInfoListener = func(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool)
@@ -47,7 +49,7 @@ type Client struct {
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
-	log.Println("start zwave2mqtt client")
+	config.GetLogger().Info("start zwave2mqtt client")
 	client := &Client{
 		valueEventTopic:    config.ZvaveValueEventTopic,
 		apiTopic:           config.ZwaveMqttApiTopic,
@@ -64,19 +66,20 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 		SetWriteTimeout(10 * time.Second).
 		SetOrderMatters(false).
 		SetConnectionLostHandler(func(_ paho.Client, err error) {
-			log.Println("connection to zwave2mqtt broker lost")
+			config.GetLogger().Warn("connection to zwave2mqtt broker lost", "error", err.Error())
 		}).
 		SetOnConnectHandler(func(_ paho.Client) {
-			log.Println("connected to zwave2mqtt broker")
+			config.GetLogger().Info("connected to zwave2mqtt broker")
 			err := client.startDefaultListener()
 			if err != nil {
+				config.GetLogger().Error("fatal: unable to start default listener", "error", err)
 				log.Fatal("FATAL: ", err)
 			}
 		})
 
 	client.mqtt = paho.NewClient(options)
 	if token := client.mqtt.Connect(); token.Wait() && token.Error() != nil {
-		log.Println("Error on MqttStart.Connect(): ", token.Error())
+		config.GetLogger().Error("unable to connect to zwave2mqtt broker", "error", token.Error())
 		return nil, token.Error()
 	}
 
@@ -147,7 +150,7 @@ func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
 
 func (this *Client) SendZwayCommand(command string, args []interface{}) error {
 	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
+		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 	topic := this.apiTopic + command + "/set"
@@ -155,12 +158,10 @@ func (this *Client) SendZwayCommand(command string, args []interface{}) error {
 		"args": args,
 	}
 	msg, err := json.Marshal(payload)
-	if this.debug {
-		log.Println("DEBUG: publish ", topic, string(msg))
-	}
+	slog.Debug("publish", "topic", topic, "payload", string(msg))
 	token := this.mqtt.Publish(topic, 2, false, string(msg))
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Client.Publish(): ", token.Error())
+		slog.Error("Error on Client.Publish()", "error", token.Error())
 		return token.Error()
 	}
 	return err

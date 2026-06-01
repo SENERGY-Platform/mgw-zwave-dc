@@ -17,15 +17,15 @@
 package connector
 
 import (
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
-	"log"
 	"strconv"
+
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 )
 
 func (this *Connector) ValueEventListener(nodeValue model.Value) {
 	deviceId, serviceId, value, err := this.parseNodeValueAsMgwEvent(nodeValue)
 	if err != nil {
-		log.Println("ERROR: unable to create device-id and service-id for node-value", err)
+		this.config.GetLogger().Error("unable to create device-id and service-id for node-value", "error", err)
 		this.mgwClient.SendClientError("unable to create device-id and service-id for node-value: " + err.Error())
 		return
 	}
@@ -33,12 +33,12 @@ func (this *Connector) ValueEventListener(nodeValue model.Value) {
 		this.saveValue(deviceId, serviceId, value)
 		err = this.mgwClient.MarshalAndSendEvent(deviceId, serviceId, value)
 		if err != nil {
-			log.Println("ERROR: unable to send event", deviceId, serviceId, err)
+			this.config.GetLogger().Error("unable to send event", "device", deviceId, "service", serviceId, "error", err)
 			this.mgwClient.SendClientError("unable to send event: " + err.Error())
 			return
 		}
-	} else if this.config.Debug {
-		log.Printf("DEBUG: ignore event for %v because the device is not registered\n", deviceId)
+	} else {
+		this.config.GetLogger().Debug("ignore event for device because the device is not registered", "device", deviceId)
 	}
 }
 
@@ -55,7 +55,7 @@ func (this *Connector) sendStatistics(node model.DeviceInfo) {
 	deviceId := this.addDeviceIdPrefix(rawDeviceId)
 	err := this.mgwClient.MarshalAndSendEvent(deviceId, "statistics", node.Statistics)
 	if err != nil {
-		log.Println("ERROR: unable to send event", deviceId, "statistics", err)
+		this.config.GetLogger().Error("unable to send event", "device", deviceId, "service", "statistics", "error", err)
 		this.mgwClient.SendClientError("unable to send event: " + err.Error())
 		return
 	}

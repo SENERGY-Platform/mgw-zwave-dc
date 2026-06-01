@@ -19,24 +19,25 @@ package zwavejs2mqtt
 import (
 	"encoding/json"
 	"errors"
-	paho "github.com/eclipse/paho.mqtt.golang"
-	"log"
+	"log/slog"
 	"strings"
+
+	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
 func (this *Client) startDeviceStateListener() error {
 	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
+		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 
-	log.Println("subscribe:", this.deviceStateTopic)
+	slog.Info("subscribe", "topic", this.deviceStateTopic)
 	token := this.mqtt.Subscribe(this.deviceStateTopic, 2, func(client paho.Client, message paho.Message) {
 		this.handleDeviceStateMessage(message.Topic(), message.Payload())
 		this.handleValueEventMessage(message.Topic(), message.Payload())
 	})
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Subscribe: ", this.deviceStateTopic, token.Error())
+		slog.Error("Error on Subscribe", "topic", this.deviceStateTopic, "error", token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
@@ -81,15 +82,15 @@ func (this *Client) handleDeviceStateMessage(topic string, payload []byte) {
 		}
 		if msg.NodeId > 1 {
 			if msg.Status == ALIVE || msg.Status == ASLEEP {
-				log.Println("device state update: ", msg.NodeId, msg.Status)
+				slog.Info("device state update", "node_id", msg.NodeId, "status", msg.Status)
 				err = this.deviceStateListener(msg.NodeId, true)
 			}
 			if msg.Status == DEAD {
-				log.Println("device state update: ", msg.NodeId, msg.Status)
+				slog.Info("device state update", "node_id", msg.NodeId, "status", msg.Status)
 				err = this.deviceStateListener(msg.NodeId, false)
 			}
 			if err != nil {
-				log.Println("ERROR: unable to update device state:", err)
+				slog.Error("unable to update device state", "error", err)
 			}
 		}
 	}

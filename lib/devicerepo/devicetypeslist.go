@@ -20,10 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
-	"time"
 )
 
 const AttributeUsedForZwave = "senergy/zwave-dc"
@@ -56,11 +56,11 @@ func (this *DeviceRepo) refreshDeviceTypeList() error {
 		this.lastDtRefreshUsedFallback = false
 		err = this.fallback.Set(DtFallbackKey, this.deviceTypes)
 		if err != nil {
-			log.Println("WARNING: unable to store device-types in fallback file")
+			this.config.GetLogger().Warn("unable to store device-types in fallback file", "error", err)
 		}
 		return nil
 	} else {
-		log.Println("WARNING: use fallback file to load device type list")
+		this.config.GetLogger().Warn("unable to load device type list from device repository --> use fallback file to load device type list", "error", err)
 		result, err = this.getDeviceTypeListFromFallback()
 		if err != nil {
 			return err
@@ -92,7 +92,7 @@ func (this *DeviceRepo) getDeviceTypeListFromDeviceRepository() (result []models
 func (this *DeviceRepo) getDeviceTypeListFromFallback() (result []models.DeviceType, err error) {
 	value, fallbackerr := this.fallback.Get(DtFallbackKey)
 	if fallbackerr != nil {
-		log.Println("ERROR: unable to load fallback", fallbackerr)
+		this.config.GetLogger().Warn("unable to load fallback", "error", fallbackerr)
 		return result, errors.Join(err, fallbackerr)
 	}
 	var ok bool
@@ -100,8 +100,8 @@ func (this *DeviceRepo) getDeviceTypeListFromFallback() (result []models.DeviceT
 	if !ok {
 		err = jsonCast(value, &result)
 		if err != nil {
+			this.config.GetLogger().Error("fallback file does not contain expected format", "error", err)
 			err = fmt.Errorf("fallback file does not contain expected format: %w", err)
-			log.Println("ERROR:", err)
 			return result, err
 		}
 		this.fallback.Set(DtFallbackKey, result)

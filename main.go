@@ -19,13 +19,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib"
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 )
 
 func main() {
@@ -41,7 +42,7 @@ func main() {
 
 	_, err = lib.New(config, ctx)
 	if err != nil {
-		log.Println(err)
+		config.GetLogger().Error("unable to start service", "error", err)
 		cancel()
 	}
 
@@ -49,7 +50,7 @@ func main() {
 		shutdown := make(chan os.Signal, 1)
 		signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 		sig := <-shutdown
-		log.Println("received shutdown signal", sig)
+		config.GetLogger().Info("received shutdown signal", "signal", sig)
 		cancel()
 	}()
 

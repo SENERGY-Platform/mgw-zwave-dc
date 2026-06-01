@@ -20,6 +20,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo/auth"
@@ -28,11 +33,6 @@ import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwave2mqtt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/zwavejs2mqtt"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Z2mClient interface {
@@ -114,7 +114,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 	if config.UpdatePeriod != "" && config.UpdatePeriod != "-" {
 		result.updateTickerDuration, err = time.ParseDuration(config.UpdatePeriod)
 		if err != nil {
-			log.Println("ERROR: unable to parse update period as duration")
+			config.GetLogger().Error("unable to parse update period as duration", "error", err)
 			result.mgwClient.SendClientError("unable to parse update period as duration")
 			return nil, err
 		}
@@ -130,13 +130,13 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 				case <-ctx.Done():
 					return
 				case <-result.updateTicker.C:
-					log.Println("send periodical update request to z2m", result.z2mClient.RequestDeviceInfoUpdate())
+					config.GetLogger().Info("send periodical update request to z2m", "result", result.z2mClient.RequestDeviceInfoUpdate())
 				}
 			}
 		}()
 	}
 
-	log.Println("initial update request", result.z2mClient.RequestDeviceInfoUpdate())
+	config.GetLogger().Info(" update request", "result", result.z2mClient.RequestDeviceInfoUpdate())
 
 	go func() {
 		timer := time.NewTimer(config.InitialUpdateRequestDelay.GetDuration())
@@ -152,7 +152,7 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		case <-ctx.Done():
 			return
 		case <-timer.C:
-			log.Println("delayed initial update request", result.z2mClient.RequestDeviceInfoUpdate())
+			config.GetLogger().Info("delayed initial update request", "result", result.z2mClient.RequestDeviceInfoUpdate())
 		}
 	}()
 

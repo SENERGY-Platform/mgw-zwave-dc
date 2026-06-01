@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"runtime/debug"
 )
@@ -47,7 +47,7 @@ func PermissionSearch(token string, searchUrl string, query QueryMessage, result
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(resp.Body)
 		err = errors.New(buf.String())
-		log.Println("ERROR: ", resp.StatusCode, err)
+		slog.Error("unexpected status code", "status", resp.StatusCode, "error", err, "url", searchUrl+"/v3/query")
 		debug.PrintStack()
 		return err, resp.StatusCode
 	}

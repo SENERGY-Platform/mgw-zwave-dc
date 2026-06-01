@@ -19,12 +19,12 @@ package connector
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
-	"strconv"
-	"strings"
 )
 
 func (this *Connector) provideDeviceTypeId(node model.DeviceInfo) (result string, err error) {
@@ -47,13 +47,13 @@ func (this *Connector) provideDeviceTypeId(node model.DeviceInfo) (result string
 
 	result, usedFallback, err = this.devicerepo.FindDeviceTypeId(node)
 	if errors.Is(err, model.NoMatchingDeviceTypeFound) {
-		log.Println("WARNING: unable to find matching device type", err)
+		this.config.GetLogger().Warn("unable to find matching device type", "error", err)
 		if !usedFallback {
 			if this.config.CreateMissingDeviceTypes {
-				log.Println("create device type", err)
+				this.config.GetLogger().Info("create device type", "error", err)
 				result, err = this.createDeviceType(node)
 				if err != nil {
-					log.Println("WARNING: unable to create device type", err)
+					this.config.GetLogger().Warn("unable to create device type", "error", err)
 					return result, err
 				}
 				return result, err
@@ -120,13 +120,13 @@ func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.De
 			if strings.HasSuffix(value.GetServiceId(false), "hexColor") {
 				valueType = models.String
 			} else {
-				log.Printf("WARNING: unknown value type %v in value %v", value.Type, value.ValueId)
+				this.config.GetLogger().Warn("unknown value type (color without hexColor suffix in service)", "valueType", value.Type, "valueId", value.ValueId, "serviceId", value.GetServiceId(false))
 				continue
 			}
 		case "duration":
 			continue
 		default:
-			log.Printf("WARNING: unknown value type %v in value %v", value.Type, value.ValueId)
+			this.config.GetLogger().Warn("unknown value type", "valueType", value.Type, "valueId", value.ValueId)
 			continue
 		}
 		if !value.WriteOnly {

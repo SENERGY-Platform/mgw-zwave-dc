@@ -18,11 +18,13 @@ package mgw
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
-	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
+	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
 const DeviceManagerTopic = "device-manager/device"
@@ -55,12 +57,13 @@ func New(config configuration.Config, ctx context.Context, refreshNotifier func(
 		SetOrderMatters(false).
 		SetResumeSubs(true).
 		SetConnectionLostHandler(func(_ paho.Client, err error) {
-			log.Println("connection to mgw broker lost")
+			config.GetLogger().Warn("connection to mgw broker lost", "error", err.Error())
 		}).
 		SetOnConnectHandler(func(_ paho.Client) {
-			log.Println("connected to mgw broker")
+			slog.Info("connected to mgw broker")
 			err := client.initSubscriptions()
 			if err != nil {
+				config.GetLogger().Error("fatal: unable to init subscriptions", "error", err)
 				log.Fatal("FATAL: ", err)
 			}
 			if client.deviceManagerRefreshNotifier != nil {
@@ -70,7 +73,7 @@ func New(config configuration.Config, ctx context.Context, refreshNotifier func(
 
 	client.mqtt = paho.NewClient(options)
 	if token := client.mqtt.Connect(); token.Wait() && token.Error() != nil {
-		log.Println("Error on MqttStart.Connect(): ", token.Error())
+		config.GetLogger().Error("unable to connect to mgw broker", "error", token.Error())
 		return nil, token.Error()
 	}
 

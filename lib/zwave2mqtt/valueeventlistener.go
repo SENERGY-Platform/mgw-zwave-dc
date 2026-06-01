@@ -19,32 +19,29 @@ package zwave2mqtt
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
+
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	paho "github.com/eclipse/paho.mqtt.golang"
-	"log"
 )
 
 func (this *Client) startValueEventListener() error {
 	if !this.mqtt.IsConnected() {
-		log.Println("WARNING: mqtt client not connected")
+		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 
 	token := this.mqtt.Subscribe(this.valueEventTopic, 2, func(client paho.Client, message paho.Message) {
 		if this.valueEventListener != nil {
 			if !this.isValueEvent(message) {
-				if this.debug {
-					log.Println("is not value event: \n", string(message.Payload()))
-				}
+				slog.Debug("is not value event", "topic", message.Topic(), "payload", string(message.Payload()))
 				return
 			}
-			if this.debug {
-				log.Println("value event: \n", string(message.Payload()))
-			}
+			slog.Debug("value event", "topic", message.Topic(), "payload", string(message.Payload()))
 			result := model.Value{}
 			err := json.Unmarshal(message.Payload(), &result)
 			if err != nil {
-				log.Println("ERROR: unable to unmarshal getNodes result", err)
+				slog.Error("unable to unmarshal getNodes result", "error", err)
 				this.ForwardError("unable to unmarshal getNodes result: " + err.Error())
 				return
 			}
@@ -52,7 +49,7 @@ func (this *Client) startValueEventListener() error {
 		}
 	})
 	if token.Wait() && token.Error() != nil {
-		log.Println("Error on Subscribe: ", this.apiTopic+GetNodesCommandTopic, token.Error())
+		slog.Error("Error on Subscribe", "topic", this.valueEventTopic, "error", token.Error())
 		this.ForwardError("Error on Subscribe: " + token.Error().Error())
 		return token.Error()
 	}
