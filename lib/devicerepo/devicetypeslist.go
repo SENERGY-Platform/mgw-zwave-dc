@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/client"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 
