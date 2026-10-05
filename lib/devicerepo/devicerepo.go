@@ -19,7 +19,6 @@ package devicerepo
 import (
 	"fmt"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/configuration"
-	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/devicerepo/fallback"
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"slices"
@@ -29,16 +28,14 @@ import (
 )
 
 type DeviceRepo struct {
-	config                    configuration.Config
-	auth                      Auth
-	fallback                  fallback.Fallback
-	deviceTypes               []models.DeviceType
-	minCacheDuration          time.Duration
-	maxCacheDuration          time.Duration
-	lastDtRefresh             time.Time
-	lastDtRefreshUsedFallback bool
-	dtMux                     sync.Mutex
-	createdDt                 map[string]models.DeviceType
+	config           configuration.Config
+	auth             Auth
+	deviceTypes      []models.DeviceType
+	minCacheDuration time.Duration
+	maxCacheDuration time.Duration
+	lastDtRefresh    time.Time
+	dtMux            sync.Mutex
+	createdDt        map[string]models.DeviceType
 }
 
 type Auth interface {
@@ -54,14 +51,9 @@ func New(config configuration.Config, auth Auth) (*DeviceRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := fallback.NewFallback(config.FallbackFile)
-	if err != nil {
-		return nil, err
-	}
 	return &DeviceRepo{
 		auth:             auth,
 		config:           config,
-		fallback:         f,
 		minCacheDuration: minCacheDuration,
 		maxCacheDuration: maxCacheDuration,
 		createdDt:        map[string]models.DeviceType{},
@@ -75,27 +67,27 @@ func (this *DeviceRepo) getToken() (string, error) {
 	return this.auth.EnsureAccess(this.config)
 }
 
-func (this *DeviceRepo) FindDeviceTypeId(device model.DeviceInfo) (dtId string, usedFallback bool, err error) {
+func (this *DeviceRepo) FindDeviceTypeId(device model.DeviceInfo) (dtId string, err error) {
 	deviceTypes, err := this.ListZwaveDeviceTypes()
 	if err != nil {
-		return "", this.getLastDtRefreshUsedFallback(), err
+		return "", err
 	}
 	deviceType, ok := this.getMatchingDeviceType(deviceTypes, device)
 	if !ok && time.Since(this.lastDtRefresh) > this.minCacheDuration {
 		err = this.refreshDeviceTypeList()
 		if err != nil {
-			return "", this.getLastDtRefreshUsedFallback(), err
+			return "", err
 		}
 		deviceTypes, err = this.ListZwaveDeviceTypes()
 		if err != nil {
-			return "", this.getLastDtRefreshUsedFallback(), err
+			return "", err
 		}
 		deviceType, ok = this.getMatchingDeviceType(deviceTypes, device)
 	}
 	if !ok {
-		return "", this.getLastDtRefreshUsedFallback(), fmt.Errorf("%w: mapping-key=%v", model.NoMatchingDeviceTypeFound, device.GetTypeMappingKey())
+		return "", fmt.Errorf("%w: mapping-key=%v", model.NoMatchingDeviceTypeFound, device.GetTypeMappingKey())
 	}
-	return deviceType.Id, this.getLastDtRefreshUsedFallback(), nil
+	return deviceType.Id, nil
 }
 
 const AttributeZwaveTypeMappingKey = "senergy/zwave-type-mapping-key"

@@ -43,23 +43,18 @@ func (this *Connector) provideDeviceTypeId(node model.DeviceInfo) (result string
 		return result, nil
 	}
 
-	var usedFallback bool
-
-	result, usedFallback, err = this.devicerepo.FindDeviceTypeId(node)
+	result, err = this.devicerepo.FindDeviceTypeId(node)
 	if errors.Is(err, model.NoMatchingDeviceTypeFound) {
 		this.config.GetLogger().Warn("unable to find matching device type", "error", err)
-		if !usedFallback {
-			if this.config.CreateMissingDeviceTypes {
-				this.config.GetLogger().Info("create device type", "error", err)
-				result, err = this.createDeviceType(node)
-				if err != nil {
-					this.config.GetLogger().Warn("unable to create device type", "error", err)
-					return result, err
-				}
+		if this.config.CreateMissingDeviceTypes {
+			this.config.GetLogger().Info("create device type", "error", err)
+			result, err = this.createDeviceType(node)
+			if err != nil {
+				this.config.GetLogger().Warn("unable to create device type", "error", err)
 				return result, err
 			}
+			return result, err
 		}
-
 	}
 	return result, err
 }

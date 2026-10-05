@@ -45,7 +45,7 @@ type Z2mClient interface {
 }
 
 type DeviceRepo interface {
-	FindDeviceTypeId(device model.DeviceInfo) (dtId string, usedFallback bool, err error)
+	FindDeviceTypeId(device model.DeviceInfo) (dtId string, err error)
 	CreateDeviceTypeWithDistinctAttributes(key string, dt models.DeviceType, attributeKeys []string) (result models.DeviceType, code int, err error)
 }
 
