@@ -24,6 +24,8 @@ import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/tests/docker"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -38,6 +40,19 @@ func TestConnector(t *testing.T) {
 
 	config.ZwaveNetworkEventsTopic = "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
 	config.DeviceIdPrefix = "test-prefix"
+
+	// nodes without an entry in DeviceTypeMapping are looked up in the device repository,
+	// an empty list lets the connector skip them without depending on the platform
+	deviceRepo := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/v3/device-types" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("X-Total-Count", "0")
+		w.Write([]byte("[]"))
+	}))
+	defer deviceRepo.Close()
+	config.DeviceRepositoryUrl = deviceRepo.URL
 
 	t.Run("missing devices offline", func(t *testing.T) {
 		c2 := config
