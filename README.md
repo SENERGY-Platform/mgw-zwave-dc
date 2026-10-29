@@ -5,6 +5,10 @@ The 'auth_endpoint' config field can/should be left empty if this component is u
 - Payload type: Entire Z-Wave value Object
 - Send Zwave events: (optional to enable live device register)
 
+## zwavejs2mqtt image
+`zwavejs2mqtt/` builds `ghcr.io/senergy-platform/zwavejs2mqtt`, the zwave-js-ui image used by the mgw module. Its start script applies the MQTT and log settings from the environment to `settings.json` in the store volume.
+The image has its own version line: a tag `zwavejs2mqtt/vX.Y.Z` publishes the image as `vX.Y.Z`, plain `vX.Y.Z` tags release mgw-zwave-dc.
+
 ## deployment example
 ```
 docker run -d --name zwavejs2mqtt -p 8091:8091 -p 3000:3000 --device=/dev/serial/by-id/usb-0658_0200-if00:/dev/zwave \
