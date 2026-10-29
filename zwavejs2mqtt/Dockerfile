@@ -1,4 +1,4 @@
-FROM zwavejs/zwave-js-ui:11.0.0
+FROM zwavejs/zwave-js-ui:11.25.0
 
 ENV MQTT_BROKER_PORT=1883
 ENV MQTT_BROKER_HOST=localhost
