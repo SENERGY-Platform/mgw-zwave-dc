@@ -19,6 +19,7 @@ package connector
 import (
 	"github.com/SENERGY-Platform/mgw-zwave-dc/lib/model"
 	"testing"
+	"time"
 )
 
 func Test_encodeLocalId(t *testing.T) {
@@ -50,4 +51,18 @@ func FuzzLocalIdEncode(f *testing.F) {
 			t.Error("\n", result, "\n", str)
 		}
 	})
+}
+
+func Test_parseCommandAckTimeout(t *testing.T) {
+	for in, want := range map[string]time.Duration{"": 0, "-": 0, "0s": 0, "0": 0, "30s": 30 * time.Second, "1m": time.Minute} {
+		got, err := parseCommandAckTimeout(in)
+		if err != nil || got != want {
+			t.Errorf("%q: got %v, %v, want %v", in, got, err, want)
+		}
+	}
+	for _, in := range []string{"abc", "30", "-5s", " "} {
+		if _, err := parseCommandAckTimeout(in); err == nil {
+			t.Errorf("%q: expected error", in)
+		}
+	}
 }

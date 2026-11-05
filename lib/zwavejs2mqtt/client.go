@@ -49,6 +49,7 @@ type Client struct {
 	valueEventListener  ValueEventListener
 	deviceStateListener DeviceStateListener
 	forwardErrorMsg     func(msg string)
+	writes              *pendingWrites
 }
 
 func New(config configuration.Config, ctx context.Context) (*Client, error) {
@@ -58,6 +59,7 @@ func New(config configuration.Config, ctx context.Context) (*Client, error) {
 		apiTopic:           config.ZwaveMqttApiTopic,
 		networkEventsTopic: config.ZwaveNetworkEventsTopic,
 		debug:              config.Debug,
+		writes:             newPendingWrites(),
 	}
 	options := paho.NewClientOptions().
 		SetPassword(config.ZwaveMqttPw).
@@ -129,6 +131,10 @@ func (this *Client) startDefaultListener() error {
 	if err != nil {
 		return err
 	}
+	err = this.startWriteValueResponseListener()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -188,14 +194,21 @@ func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
 }
 
 func (this *Client) SendZwayCommand(command string, args []interface{}) error {
+	return this.sendZwayCommand(command, args, nil)
+}
+
+// extra are additional top-level fields of the request payload, zwave-js-ui echoes them in "origin" of its response
+func (this *Client) sendZwayCommand(command string, args []interface{}, extra map[string]interface{}) error {
 	if !this.mqtt.IsConnected() {
 		slog.Warn("mqtt client not connected")
 		return errors.New("mqtt client not connected")
 	}
 	topic := this.apiTopic + command + "/set"
-	payload := map[string]interface{}{
-		"args": args,
+	payload := map[string]interface{}{}
+	for k, v := range extra {
+		payload[k] = v
 	}
+	payload["args"] = args
 	msg, err := json.Marshal(payload)
 	slog.Debug("publish", "topic", topic, "payload", string(msg))
 	token := this.mqtt.Publish(topic, 2, false, string(msg))

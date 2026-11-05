@@ -16,6 +16,7 @@
     "zwave_network_events_topic":"zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY",
     "update_period":"15m",
     "initial_update_request_delay": "1m",
+    "command_ack_timeout": "30s",
     "delete_missing_devices": true,
     "delete_husks": false,
     "debug":false,

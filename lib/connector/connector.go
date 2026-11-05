@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,6 +42,9 @@ type Z2mClient interface {
 	SetDeviceInfoListener(listener func(nodes []model.DeviceInfo, huskIds []int64, withValues bool, allKnownDevices bool))
 	RequestDeviceInfoUpdate() error
 	SetValueByValueId(id string, value interface{}) error
+	// SetValueByValueIdWithAck returns once the controller acknowledged the write, at the latest after timeout.
+	// Implementations without acknowledgements return right after sending. A timeout <= 0 disables the wait.
+	SetValueByValueIdWithAck(ctx context.Context, id string, value interface{}, timeout time.Duration) error
 	SetDeviceStatusListener(state func(nodeId int64, online bool) error)
 }
 
@@ -67,6 +71,8 @@ type Connector struct {
 	eventsForUnregisteredDevices bool
 	nodeDeviceTypeOverwrite      map[string]string
 	devicerepo                   DeviceRepo
+	ctx                          context.Context
+	commandAckTimeout            time.Duration
 }
 
 func New(config configuration.Config, ctx context.Context) (result *Connector, err error) {
@@ -81,6 +87,13 @@ func New(config configuration.Config, ctx context.Context) (result *Connector, e
 		husksShouldBeDeleted:         config.DeleteHusks,
 		eventsForUnregisteredDevices: config.EventsForUnregisteredDevices,
 		nodeDeviceTypeOverwrite:      config.NodeDeviceTypeOverwrite,
+		ctx:                          ctx,
+	}
+
+	result.commandAckTimeout, err = parseCommandAckTimeout(config.CommandAckTimeout)
+	if err != nil {
+		config.GetLogger().Error("unable to parse command ack timeout", "error", err)
+		return nil, err
 	}
 
 	result.devicerepo, err = devicerepo.New(config, &auth.Auth{})
@@ -223,4 +236,19 @@ func (this *Duration) UnmarshalJSON(bytes []byte) (err error) {
 		return err
 	}
 	return this.SetString(str)
+}
+
+// parseCommandAckTimeout: "" and "-" disable the wait for acknowledgements (result 0), as does a zero duration
+func parseCommandAckTimeout(value string) (time.Duration, error) {
+	if value == "" || value == "-" {
+		return 0, nil
+	}
+	d, err := time.ParseDuration(value)
+	if err != nil {
+		return 0, fmt.Errorf("invalid command_ack_timeout %q: %w", value, err)
+	}
+	if d < 0 {
+		return 0, fmt.Errorf("invalid command_ack_timeout %q: must not be negative", value)
+	}
+	return d, nil
 }

@@ -135,6 +135,11 @@ func (this *Client) SetValue(nodeId int64, classId int64, instanceId int64, inde
 	return this.SendZwayCommand("/setValue", []interface{}{nodeId, classId, instanceId, index, value})
 }
 
+// SetValueByValueIdWithAck does not wait for an acknowledgement, zwave2mqtt has no response to correlate. timeout is ignored.
+func (this *Client) SetValueByValueIdWithAck(_ context.Context, valueId string, value interface{}, _ time.Duration) error {
+	return this.SetValueByValueId(valueId, value)
+}
+
 func (this *Client) SetValueByValueId(valueId string, value interface{}) error {
 	args := []interface{}{}
 	for _, v := range strings.Split(valueId, "-") {

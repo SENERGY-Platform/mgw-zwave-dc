@@ -49,6 +49,7 @@ type Config struct {
 	ZwaveNetworkEventsTopic      string            `json:"zwave_network_events_topic"`
 	UpdatePeriod                 string            `json:"update_period"`
 	InitialUpdateRequestDelay    Duration          `json:"initial_update_request_delay"`
+	CommandAckTimeout            string            `json:"command_ack_timeout"` //used in zwavejs2mqtt
 	Debug                        bool              `json:"debug"`
 	DeviceTypeMapping            map[string]string `json:"device_type_mapping"`
 	DeleteMissingDevices         bool              `json:"delete_missing_devices"`

@@ -66,10 +66,10 @@ func (this *Connector) handleSetCommand(deviceId string, serviceId string, comma
 		this.mgwClient.SendCommandError(command.CommandId, "unable to Unmarshal command data to z2m value: "+err.Error())
 		return
 	}
-	err = this.z2mClient.SetValueByValueId(valueId, value)
+	err = this.z2mClient.SetValueByValueIdWithAck(this.ctx, valueId, value, this.commandAckTimeout)
 	if err != nil {
-		this.config.GetLogger().Error("unable to send value to z2m", "device", deviceId, "service", serviceId, "value", value, "error", err)
-		this.mgwClient.SendCommandError(command.CommandId, "unable to send value to z2m: "+err.Error())
+		this.config.GetLogger().Error("unable to send value to z2m", "device", deviceId, "service", serviceId, "value_id", valueId, "value", value, "error", err)
+		this.mgwClient.SendCommandError(command.CommandId, "unable to set value "+valueId+" of device "+deviceId+": "+err.Error())
 		return
 	}
 	command.Data = ""
