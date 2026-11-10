@@ -66,12 +66,13 @@ func (this *Connector) createDeviceType(node model.DeviceInfo) (string, error) {
 
 func (this *Connector) nodeToDeviceType(node model.DeviceInfo) (result models.DeviceType) {
 	result = models.DeviceType{
-		Name:          fmt.Sprintf("UNFINISHED zwavejs2mqtt %v %v", node.Manufacturer, node.Product),
+		Name:          fmt.Sprintf("zwavejs2mqtt %v %v", node.Manufacturer, node.Product),
 		Description:   "",
 		DeviceClassId: this.config.CreateMissingDeviceTypesWithDeviceClass,
 		Attributes: []models.Attribute{
 			{Key: devicerepo.AttributeUsedForZwave, Value: "true"},
 			{Key: devicerepo.AttributeZwaveTypeMappingKey, Value: node.GetTypeMappingKey()},
+			{Key: devicerepo.AttributeUnfinished, Value: "true"},
 		},
 		Services: []models.Service{
 			{

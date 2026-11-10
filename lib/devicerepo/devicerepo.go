@@ -92,6 +92,9 @@ func (this *DeviceRepo) FindDeviceTypeId(device model.DeviceInfo) (dtId string, 
 
 const AttributeZwaveTypeMappingKey = "senergy/zwave-type-mapping-key"
 
+// AttributeUnfinished marks a device type that still needs manual completion; value "true".
+const AttributeUnfinished = "unfinished"
+
 func (this *DeviceRepo) getMatchingDeviceType(devicetypes []models.DeviceType, device model.DeviceInfo) (models.DeviceType, bool) {
 	deviceTypeKey := device.GetTypeMappingKey()
 	for _, dt := range devicetypes {
